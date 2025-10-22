@@ -1,34 +1,31 @@
-import { useFormStore } from '@/store/formStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useFormStore } from "@/store/formStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function MultiStepControls() {
-  const { 
-    schema, 
-    currentStep, 
-    toggleMultiStep, 
-    addStep, 
-    removeStep, 
-    updateStep, 
-    setCurrentStep 
+  const {
+    schema,
+    currentStep,
+    toggleMultiStep,
+    addStep,
+    removeStep,
+    updateStep,
+    setCurrentStep,
   } = useFormStore();
 
   if (!schema.isMultiStep) {
     return (
-      <Card className="w-64">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg">Multi-Step Form</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-2">
-            <Switch
-              checked={false}
-              onCheckedChange={toggleMultiStep}
-            />
+            <Switch checked={false} onCheckedChange={toggleMultiStep} />
             <Label>Enable Multi-Step</Label>
           </div>
         </CardContent>
@@ -40,25 +37,18 @@ export function MultiStepControls() {
   const currentStepData = steps[currentStep];
 
   return (
-    <Card className="w-64">
+    <Card>
       <CardHeader>
         <CardTitle className="text-lg">Multi-Step Form</CardTitle>
         <div className="flex items-center space-x-2">
-          <Switch
-            checked={true}
-            onCheckedChange={toggleMultiStep}
-          />
+          <Switch checked={true} onCheckedChange={toggleMultiStep} />
           <Label>Multi-Step Enabled</Label>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">Steps ({steps.length})</span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={addStep}
-          >
+          <Button variant="outline" size="sm" onClick={addStep}>
             <Plus className="w-4 h-4" />
           </Button>
         </div>
@@ -68,7 +58,7 @@ export function MultiStepControls() {
             <div
               key={step.id}
               className={`p-2 border rounded cursor-pointer ${
-                index === currentStep ? 'bg-primary/10 border-primary' : ''
+                index === currentStep ? "bg-primary/10 border-primary" : ""
               }`}
               onClick={() => setCurrentStep(index)}
             >
@@ -97,20 +87,30 @@ export function MultiStepControls() {
           <div className="space-y-2 pt-2 border-t">
             <Label className="text-sm font-medium">Edit Current Step</Label>
             <div>
-              <Label htmlFor="step-title" className="text-xs">Title</Label>
+              <Label htmlFor="step-title" className="text-xs">
+                Title
+              </Label>
               <Input
                 id="step-title"
                 value={currentStepData.title}
-                onChange={(e) => updateStep(currentStepData.id, { title: e.target.value })}
+                onChange={(e) =>
+                  updateStep(currentStepData.id, { title: e.target.value })
+                }
                 className="text-sm"
               />
             </div>
             <div>
-              <Label htmlFor="step-description" className="text-xs">Description</Label>
+              <Label htmlFor="step-description" className="text-xs">
+                Description
+              </Label>
               <Input
                 id="step-description"
-                value={currentStepData.description || ''}
-                onChange={(e) => updateStep(currentStepData.id, { description: e.target.value })}
+                value={currentStepData.description || ""}
+                onChange={(e) =>
+                  updateStep(currentStepData.id, {
+                    description: e.target.value,
+                  })
+                }
                 placeholder="Step description"
                 className="text-sm"
               />
@@ -133,7 +133,9 @@ export function MultiStepControls() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
+            onClick={() =>
+              setCurrentStep(Math.min(steps.length - 1, currentStep + 1))
+            }
             disabled={currentStep === steps.length - 1}
           >
             <ChevronRight className="w-4 h-4" />

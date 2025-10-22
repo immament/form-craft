@@ -1,18 +1,19 @@
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { FormField } from '@/types';
-import { useFormStore } from '@/store/formStore';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { GripVertical, Trash2, Settings } from 'lucide-react';
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { FormField } from "@/types";
+import { useFormStore } from "@/store/formStore";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { GripVertical, Trash2, Settings } from "lucide-react";
 
 interface SortableFieldProps {
   field: FormField;
+  isClone?: boolean;
 }
 
-export function SortableField({ field }: SortableFieldProps) {
+export function SortableField({ field, isClone }: SortableFieldProps) {
   const { selectField, selectedField, removeField } = useFormStore();
   const {
     attributes,
@@ -21,8 +22,15 @@ export function SortableField({ field }: SortableFieldProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: field.id });
+  } = useSortable({
+    id: field.id,
+    data: { type: "sorting", fieldType: field.type, label: field.label },
+  });
 
+  // const style = {
+  //   transform: CSS.Transform.toString(transform),
+  //   transition,
+  // };
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -32,49 +40,55 @@ export function SortableField({ field }: SortableFieldProps) {
 
   const renderFieldPreview = () => {
     switch (field.type) {
-      case 'text':
-      case 'email':
-      case 'password':
-      case 'number':
-      case 'tel':
-      case 'url':
-      case 'date':
-      case 'time':
-      case 'datetime-local':
-      case 'file':
+      case "text":
+      case "email":
+      case "password":
+      case "number":
+      case "tel":
+      case "url":
+      case "date":
+      case "time":
+      case "datetimeLocal":
+      case "file":
         return (
           <Input
             type={field.type}
-            placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+            placeholder={
+              field.placeholder || `Enter ${field.label.toLowerCase()}`
+            }
             disabled
           />
         );
-      case 'textarea':
+      case "textarea":
         return (
           <textarea
             className="w-full px-3 py-2 border rounded-md resize-none"
-            placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+            placeholder={
+              field.placeholder || `Enter ${field.label.toLowerCase()}`
+            }
             rows={3}
             disabled
           />
         );
-      case 'select':
+      case "select":
         return (
           <select className="w-full px-3 py-2 border rounded-md" disabled>
-            <option>Select an option</option>
+            <option className="bg-background">Select an option</option>
             {field.options?.map((option, index) => (
-              <option key={index} value={option}>{option}</option>
+              <option key={index} value={option} className="bg-background">
+                {option}
+              </option>
             ))}
           </select>
         );
-      case 'checkbox':
+      case "checkbox":
         return (
           <div className="flex items-center space-x-2">
             <input type="checkbox" disabled className="rounded" />
             <span className="text-sm">{field.label}</span>
           </div>
         );
-      case 'radio':
+      case "radio":
         return (
           <div className="space-y-2">
             {field.options?.map((option, index) => (
@@ -94,8 +108,8 @@ export function SortableField({ field }: SortableFieldProps) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={`${isDragging ? 'opacity-50' : ''} ${
-        isSelected ? 'ring-2 ring-primary' : ''
+      className={`${isDragging ? "opacity-50" : ""} ${
+        isSelected ? "ring-2 ring-primary" : ""
       } transition-all`}
     >
       <CardContent className="p-4">
@@ -104,7 +118,7 @@ export function SortableField({ field }: SortableFieldProps) {
             <button
               {...attributes}
               {...listeners}
-              className="cursor-grab hover:bg-accent p-1 rounded"
+              className="cursor-grab hover:bg-accent p-1 rounded touch-none"
             >
               <GripVertical className="w-4 h-4 text-muted-foreground" />
             </button>
@@ -120,28 +134,32 @@ export function SortableField({ field }: SortableFieldProps) {
               </Label>
             </div>
           </div>
-          <div className="flex space-x-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => selectField(field.id)}
-              className="h-8 w-8"
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => removeField(field.id)}
-              className="h-8 w-8 text-destructive hover:text-destructive"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
+          {!isClone && (
+            <div className="flex space-x-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => selectField(field.id)}
+                className="h-8 w-8"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => removeField(field.id)}
+                className="h-8 w-8 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
         <div className="mt-2">
-          {field.type !== 'checkbox' && (
-            <Label className="text-sm font-medium mb-1 block">{field.label}</Label>
+          {field.type !== "checkbox" && (
+            <Label className="text-sm font-medium mb-1 block">
+              {field.label}
+            </Label>
           )}
           {renderFieldPreview()}
         </div>

@@ -6,13 +6,14 @@ interface FormStore {
   schema: FormSchema;
   selectedField: string | null;
   currentStep: number;
-  addField: (field: Omit<FormField, "id">) => void;
+  addField: (field: Omit<FormField, "id">, beforeItemId?: string) => void;
   updateField: (id: string, updates: Partial<FormField>) => void;
   removeField: (id: string) => void;
   reorderFields: (activeId: string, overId: string) => void;
   selectField: (id: string | null) => void;
   updateSchema: (updates: Partial<Omit<FormSchema, "fields">>) => void;
   loadTemplate: (template: Omit<FormSchema, "id">) => void;
+  loadSchema: (template: FormSchema) => void;
   toggleMultiStep: () => void;
   addStep: () => void;
   removeStep: (stepId: string) => void;
@@ -36,15 +37,18 @@ export const useFormStore = create<FormStore>((set, get) => ({
   selectedField: null,
   currentStep: 0,
 
-  addField: (field) =>
+  addField: (field, beforeItemId) => {
     set((state) => {
       // Generate readable field name based on label
-      const fieldName = field.label
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '_')
-        .replace(/_+/g, '_')
-        .replace(/^_|_$/g, '') || field.type;
-      
+      const fieldName =
+        (field.label
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "_")
+          .replace(/_+/g, "_")
+          .replace(/^_|_$/g, "") || field.type) +
+        "_" +
+        generateId();
+
       const newField = { ...field, id: fieldName };
 
       if (
@@ -58,7 +62,7 @@ export const useFormStore = create<FormStore>((set, get) => ({
             ...state.schema,
             steps: state.schema.steps.map((step, index) =>
               index === state.currentStep
-                ? { ...step, fields: [...step.fields, newField] }
+                ? { ...step, fields: insertItem(step.fields, newField) }
                 : step
             ),
           },
@@ -68,11 +72,28 @@ export const useFormStore = create<FormStore>((set, get) => ({
         return {
           schema: {
             ...state.schema,
-            fields: [...state.schema.fields, newField],
+            fields: insertItem(state.schema.fields, newField),
           },
         };
       }
-    }),
+    });
+
+    function insertItem(fields: FormField[], newField: FormField) {
+      if (beforeItemId) {
+        const index = fields.findIndex((f) => f.id === beforeItemId);
+        if (index !== -1) {
+          // console.log("insertItem", index, fields, [...fields]);
+          const result = [...fields];
+          result.splice(index, 0, newField);
+          // console.log("insertItem Result", result);
+
+          return result;
+        }
+      }
+
+      return [...fields, newField];
+    }
+  },
 
   updateField: (id, updates) =>
     set((state) => ({
@@ -119,6 +140,11 @@ export const useFormStore = create<FormStore>((set, get) => ({
   loadTemplate: (template) =>
     set({
       schema: { ...template, id: generateId() },
+      selectedField: null,
+    }),
+  loadSchema: (template) =>
+    set({
+      schema: { ...template },
       selectedField: null,
     }),
 
@@ -202,19 +228,21 @@ export const useFormStore = create<FormStore>((set, get) => ({
 
   setCurrentStep: (step) => set({ currentStep: step }),
 
-  regenerateFieldIds: () => set((state) => ({
-    schema: {
-      ...state.schema,
-      fields: state.schema.fields.map(field => ({
-        ...field,
-        id: field.label
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, '_')
-          .replace(/_+/g, '_')
-          .replace(/^_|_$/g, '') || field.type
-      }))
-    }
-  })),
+  regenerateFieldIds: () =>
+    set((state) => ({
+      schema: {
+        ...state.schema,
+        fields: state.schema.fields.map((field) => ({
+          ...field,
+          id:
+            field.label
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "_")
+              .replace(/_+/g, "_")
+              .replace(/^_|_$/g, "") || field.type,
+        })),
+      },
+    })),
 
   exportSchema: () => get().schema,
 
@@ -267,7 +295,7 @@ export const useFormStore = create<FormStore>((set, get) => ({
             break;
           case "date":
           case "time":
-          case "datetime-local":
+          case "datetimeLocal":
             zodType = "z.string()";
             break;
           case "file":
@@ -350,7 +378,7 @@ export default function ${schema.title.replace(/\s+/g, "")}Form() {
             case "url":
             case "date":
             case "time":
-            case "datetime-local":
+            case "datetimeLocal":
             case "file":
               return `<div>
         <label className="block text-sm font-medium mb-1">${field.label}</label>
@@ -360,7 +388,9 @@ export default function ${schema.title.replace(/\s+/g, "")}Form() {
           {...register('${field.id}', { required: ${field.required} })}
           className="w-full px-3 py-2 border rounded-md"
         />
-        {errors.${field.id} && <span className="text-red-500 text-sm">This field is required</span>}
+        {errors.${
+          field.id
+        } && <span className="text-red-500 text-sm">This field is required</span>}
       </div>`;
             case "textarea":
               return `<div>
@@ -371,7 +401,9 @@ export default function ${schema.title.replace(/\s+/g, "")}Form() {
           className="w-full px-3 py-2 border rounded-md"
           rows={4}
         />
-        {errors.${field.id} && <span className="text-red-500 text-sm">This field is required</span>}
+        {errors.${
+          field.id
+        } && <span className="text-red-500 text-sm">This field is required</span>}
       </div>`;
             case "select":
               return `<div>
@@ -380,12 +412,14 @@ export default function ${schema.title.replace(/\s+/g, "")}Form() {
           {...register('${field.id}', { required: ${field.required} })}
           className="w-full px-3 py-2 border rounded-md"
         >
-          <option value="">Select an option</option>
+          <option value="" className="bg-background" className="bg-background">Select an option</option>
           ${field.options
             ?.map((opt) => `<option value="${opt}">${opt}</option>`)
             .join("\n          ")}
         </select>
-        {errors.${field.id} && <span className="text-red-500 text-sm">This field is required</span>}
+        {errors.${
+          field.id
+        } && <span className="text-red-500 text-sm">This field is required</span>}
       </div>`;
             case "checkbox":
               return `<div className="flex items-center space-x-2">

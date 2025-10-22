@@ -1,54 +1,60 @@
-import { useForm } from 'react-hook-form';
-import { useFormStore } from '@/store/formStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Eye } from 'lucide-react';
+import { useForm } from "react-hook-form";
+import { useFormStore } from "@/store/formStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Eye } from "lucide-react";
+import { FormField } from "@/types";
 
 export function FormPreview() {
   const { schema } = useFormStore();
-  const { register, handleSubmit, formState: { errors }, watch } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm();
   const watchedValues = watch();
 
   const onSubmit = (data: any) => {
-    console.log('Form Preview Submission:', data);
-    alert('Form submitted! Check console for data.');
+    console.log("Form Preview Submission:", data);
+    alert("Form submitted! Check console for data.");
   };
 
   const shouldShowField = (field: any) => {
     if (!field.conditional) return true;
-    
+
     const dependentValue = watchedValues?.[field.conditional.dependsOn];
     const conditionValue = field.conditional.value;
-    
+
     switch (field.conditional.condition) {
-      case 'equals':
+      case "equals":
         return dependentValue === conditionValue;
-      case 'not_equals':
+      case "not_equals":
         return dependentValue !== conditionValue;
-      case 'contains':
+      case "contains":
         return dependentValue?.toString().includes(conditionValue);
-      case 'not_empty':
-        return dependentValue && dependentValue.toString().trim() !== '';
+      case "not_empty":
+        return dependentValue && dependentValue.toString().trim() !== "";
       default:
         return true;
     }
   };
 
-  const renderField = (field: any) => {
+  const renderField = (field: FormField) => {
     switch (field.type) {
-      case 'text':
-      case 'email':
-      case 'password':
-      case 'number':
-      case 'tel':
-      case 'url':
-      case 'date':
-      case 'time':
-      case 'datetime-local':
-      case 'file':
+      case "text":
+      case "email":
+      case "password":
+      case "number":
+      case "tel":
+      case "url":
+      case "date":
+      case "time":
+      case "datetimeLocal":
+      case "file":
         return (
           <div key={field.id} className="space-y-2">
             <Label htmlFor={field.id}>
@@ -61,29 +67,39 @@ export function FormPreview() {
               placeholder={field.placeholder}
               {...register(field.id, {
                 required: field.required,
-                minLength: field.validation?.min ? {
-                  value: field.validation.min,
-                  message: field.validation.message || `Minimum ${field.validation.min} characters required`
-                } : undefined,
-                maxLength: field.validation?.max ? {
-                  value: field.validation.max,
-                  message: field.validation.message || `Maximum ${field.validation.max} characters allowed`
-                } : undefined,
-                pattern: field.validation?.pattern ? {
-                  value: new RegExp(field.validation.pattern),
-                  message: field.validation.message || 'Invalid format'
-                } : undefined
+                minLength: field.validation?.min
+                  ? {
+                      value: field.validation.min,
+                      message:
+                        field.validation.message ||
+                        `Minimum ${field.validation.min} characters required`,
+                    }
+                  : undefined,
+                maxLength: field.validation?.max
+                  ? {
+                      value: field.validation.max,
+                      message:
+                        field.validation.message ||
+                        `Maximum ${field.validation.max} characters allowed`,
+                    }
+                  : undefined,
+                pattern: field.validation?.pattern
+                  ? {
+                      value: new RegExp(field.validation.pattern),
+                      message: field.validation.message || "Invalid format",
+                    }
+                  : undefined,
               })}
             />
             {errors[field.id] && (
               <span className="text-red-500 text-sm">
-                {(errors[field.id] as any)?.message || 'This field is required'}
+                {(errors[field.id] as any)?.message || "This field is required"}
               </span>
             )}
           </div>
         );
 
-      case 'textarea':
+      case "textarea":
         return (
           <div key={field.id} className="space-y-2">
             <Label htmlFor={field.id}>
@@ -95,25 +111,33 @@ export function FormPreview() {
               placeholder={field.placeholder}
               {...register(field.id, {
                 required: field.required,
-                minLength: field.validation?.min ? {
-                  value: field.validation.min,
-                  message: field.validation.message || `Minimum ${field.validation.min} characters required`
-                } : undefined,
-                maxLength: field.validation?.max ? {
-                  value: field.validation.max,
-                  message: field.validation.message || `Maximum ${field.validation.max} characters allowed`
-                } : undefined
+                minLength: field.validation?.min
+                  ? {
+                      value: field.validation.min,
+                      message:
+                        field.validation.message ||
+                        `Minimum ${field.validation.min} characters required`,
+                    }
+                  : undefined,
+                maxLength: field.validation?.max
+                  ? {
+                      value: field.validation.max,
+                      message:
+                        field.validation.message ||
+                        `Maximum ${field.validation.max} characters allowed`,
+                    }
+                  : undefined,
               })}
             />
             {errors[field.id] && (
               <span className="text-red-500 text-sm">
-                {(errors[field.id] as any)?.message || 'This field is required'}
+                {(errors[field.id] as any)?.message || "This field is required"}
               </span>
             )}
           </div>
         );
 
-      case 'select':
+      case "select":
         return (
           <div key={field.id} className="space-y-2">
             <Label htmlFor={field.id}>
@@ -125,18 +149,24 @@ export function FormPreview() {
               {...register(field.id, { required: field.required })}
               className="w-full px-3 py-2 border rounded-md"
             >
-              <option value="">Select an option</option>
+              <option value="" className="bg-background">
+                Select an option
+              </option>
               {field.options?.map((option: string, index: number) => (
-                <option key={index} value={option}>{option}</option>
+                <option key={index} value={option} className="bg-background">
+                  {option}
+                </option>
               ))}
             </select>
             {errors[field.id] && (
-              <span className="text-red-500 text-sm">This field is required</span>
+              <span className="text-red-500 text-sm">
+                This field is required
+              </span>
             )}
           </div>
         );
 
-      case 'radio':
+      case "radio":
         return (
           <div key={field.id} className="space-y-2">
             <Label>
@@ -152,19 +182,24 @@ export function FormPreview() {
                     value={option}
                     {...register(field.id, { required: field.required })}
                   />
-                  <Label htmlFor={`${field.id}-${index}`} className="font-normal">
+                  <Label
+                    htmlFor={`${field.id}-${index}`}
+                    className="font-normal"
+                  >
                     {option}
                   </Label>
                 </div>
               ))}
             </div>
             {errors[field.id] && (
-              <span className="text-red-500 text-sm">This field is required</span>
+              <span className="text-red-500 text-sm">
+                This field is required
+              </span>
             )}
           </div>
         );
 
-      case 'checkbox':
+      case "checkbox":
         return (
           <div key={field.id} className="flex items-center space-x-2">
             <input
@@ -178,7 +213,9 @@ export function FormPreview() {
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Label>
             {errors[field.id] && (
-              <span className="text-red-500 text-sm block">This field is required</span>
+              <span className="text-red-500 text-sm block">
+                This field is required
+              </span>
             )}
           </div>
         );
@@ -189,7 +226,7 @@ export function FormPreview() {
   };
 
   return (
-    <Card className="w-96">
+    <Card className="">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Eye className="w-4 h-4" />
@@ -211,9 +248,9 @@ export function FormPreview() {
                 </p>
               )}
             </div>
-            
+
             {schema.fields.filter(shouldShowField).map(renderField)}
-            
+
             <Button type="submit" className="w-full">
               Submit
             </Button>

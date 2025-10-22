@@ -1,22 +1,22 @@
-import { useFormStore } from '@/store/formStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { useFormStore } from "@/store/formStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
-import { Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, X } from "lucide-react";
+import { useState } from "react";
 
 export function FieldEditor() {
   const { schema, selectedField, updateField, selectField } = useFormStore();
-  const [newOption, setNewOption] = useState('');
+  const [newOption, setNewOption] = useState("");
 
-  const field = schema.fields.find(f => f.id === selectedField);
+  const field = schema.fields.find((f) => f.id === selectedField);
 
   if (!field) {
     return (
-      <Card className="w-80">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg">Field Properties</CardTitle>
         </CardHeader>
@@ -33,23 +33,23 @@ export function FieldEditor() {
     if (newOption.trim()) {
       const currentOptions = field.options || [];
       updateField(field.id, {
-        options: [...currentOptions, newOption.trim()]
+        options: [...currentOptions, newOption.trim()],
       });
-      setNewOption('');
+      setNewOption("");
     }
   };
 
   const removeOption = (index: number) => {
     const currentOptions = field.options || [];
     updateField(field.id, {
-      options: currentOptions.filter((_, i) => i !== index)
+      options: currentOptions.filter((_, i) => i !== index),
     });
   };
 
-  const needsOptions = field.type === 'select' || field.type === 'radio';
+  const needsOptions = field.type === "select" || field.type === "radio";
 
   return (
-    <Card className="w-80">
+    <Card>
       <CardHeader>
         <CardTitle className="text-lg">Field Properties</CardTitle>
         <Button
@@ -71,13 +71,15 @@ export function FieldEditor() {
           />
         </div>
 
-        {field.type !== 'checkbox' && (
+        {field.type !== "checkbox" && (
           <div>
             <Label htmlFor="field-placeholder">Placeholder</Label>
             <Input
               id="field-placeholder"
-              value={field.placeholder || ''}
-              onChange={(e) => updateField(field.id, { placeholder: e.target.value })}
+              value={field.placeholder || ""}
+              onChange={(e) =>
+                updateField(field.id, { placeholder: e.target.value })
+              }
             />
           </div>
         )}
@@ -86,7 +88,9 @@ export function FieldEditor() {
           <Switch
             id="field-required"
             checked={field.required || false}
-            onCheckedChange={(checked) => updateField(field.id, { required: checked })}
+            onCheckedChange={(checked) =>
+              updateField(field.id, { required: checked })
+            }
           />
           <Label htmlFor="field-required">Required</Label>
         </div>
@@ -120,7 +124,7 @@ export function FieldEditor() {
                   placeholder="Add option"
                   value={newOption}
                   onChange={(e) => setNewOption(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addOption()}
+                  onKeyPress={(e) => e.key === "Enter" && addOption()}
                 />
                 <Button
                   variant="ghost"
@@ -135,88 +139,115 @@ export function FieldEditor() {
           </div>
         )}
 
-        {(field.type === 'text' || field.type === 'number' || field.type === 'password' || field.type === 'textarea') && (
+        {(field.type === "text" ||
+          field.type === "number" ||
+          field.type === "password" ||
+          field.type === "textarea") && (
           <div className="space-y-3">
             <Label>Validation Rules</Label>
-            
+
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label htmlFor="min-length" className="text-xs">Min Length</Label>
+                <Label htmlFor="min-length" className="text-xs">
+                  Min Length
+                </Label>
                 <Input
                   id="min-length"
                   type="number"
                   placeholder="Min"
-                  value={field.validation?.min || ''}
-                  onChange={(e) => updateField(field.id, {
-                    validation: {
-                      ...field.validation,
-                      min: e.target.value ? parseInt(e.target.value) : undefined
-                    }
-                  })}
+                  value={field.validation?.min || ""}
+                  onChange={(e) =>
+                    updateField(field.id, {
+                      validation: {
+                        ...field.validation,
+                        min: e.target.value
+                          ? parseInt(e.target.value)
+                          : undefined,
+                      },
+                    })
+                  }
                 />
               </div>
               <div>
-                <Label htmlFor="max-length" className="text-xs">Max Length</Label>
+                <Label htmlFor="max-length" className="text-xs">
+                  Max Length
+                </Label>
                 <Input
                   id="max-length"
                   type="number"
                   placeholder="Max"
-                  value={field.validation?.max || ''}
-                  onChange={(e) => updateField(field.id, {
-                    validation: {
-                      ...field.validation,
-                      max: e.target.value ? parseInt(e.target.value) : undefined
-                    }
-                  })}
+                  value={field.validation?.max || ""}
+                  onChange={(e) =>
+                    updateField(field.id, {
+                      validation: {
+                        ...field.validation,
+                        max: e.target.value
+                          ? parseInt(e.target.value)
+                          : undefined,
+                      },
+                    })
+                  }
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="pattern" className="text-xs">Regex Pattern</Label>
+              <Label htmlFor="pattern" className="text-xs">
+                Regex Pattern
+              </Label>
               <Input
                 id="pattern"
                 placeholder="e.g., ^[A-Za-z]+$"
-                value={field.validation?.pattern || ''}
-                onChange={(e) => updateField(field.id, {
-                  validation: {
-                    ...field.validation,
-                    pattern: e.target.value || undefined
-                  }
-                })}
+                value={field.validation?.pattern || ""}
+                onChange={(e) =>
+                  updateField(field.id, {
+                    validation: {
+                      ...field.validation,
+                      pattern: e.target.value || undefined,
+                    },
+                  })
+                }
               />
             </div>
 
             <div>
-              <Label htmlFor="custom-message" className="text-xs">Custom Error Message</Label>
+              <Label htmlFor="custom-message" className="text-xs">
+                Custom Error Message
+              </Label>
               <Input
                 id="custom-message"
                 placeholder="Custom validation message"
-                value={field.validation?.message || ''}
-                onChange={(e) => updateField(field.id, {
-                  validation: {
-                    ...field.validation,
-                    message: e.target.value || undefined
-                  }
-                })}
+                value={field.validation?.message || ""}
+                onChange={(e) =>
+                  updateField(field.id, {
+                    validation: {
+                      ...field.validation,
+                      message: e.target.value || undefined,
+                    },
+                  })
+                }
               />
             </div>
           </div>
         )}
 
-        {field.type === 'email' && (
+        {field.type === "email" && (
           <div>
-            <Label htmlFor="email-message" className="text-xs">Custom Email Error Message</Label>
+            <Label htmlFor="email-message" className="text-xs">
+              Custom Email Error Message
+            </Label>
             <Input
               id="email-message"
               placeholder="Please enter a valid email"
-              value={field.validation?.message || ''}
-              onChange={(e) => updateField(field.id, {
-                validation: {
-                  ...field.validation,
-                  message: e.target.value || undefined
-                }
-              })}
+              value={field.validation?.message || ""}
+              onChange={(e) =>
+                updateField(field.id, {
+                  validation: {
+                    ...field.validation,
+                    message: e.target.value || undefined,
+                  },
+                })
+              }
             />
           </div>
         )}
@@ -225,65 +256,91 @@ export function FieldEditor() {
           <Label>Conditional Logic</Label>
           <div className="space-y-2">
             <div>
-              <Label htmlFor="depends-on" className="text-xs">Show when field</Label>
+              <Label htmlFor="depends-on" className="text-xs">
+                Show when field
+              </Label>
               <select
                 id="depends-on"
                 className="w-full px-3 py-2 border rounded-md text-sm"
-                value={field.conditional?.dependsOn || ''}
-                onChange={(e) => updateField(field.id, {
-                  conditional: e.target.value ? {
-                    dependsOn: e.target.value,
-                    condition: 'equals',
-                    value: ''
-                  } : undefined
-                })}
+                value={field.conditional?.dependsOn || ""}
+                onChange={(e) =>
+                  updateField(field.id, {
+                    conditional: e.target.value
+                      ? {
+                          dependsOn: e.target.value,
+                          condition: "equals",
+                          value: "",
+                        }
+                      : undefined,
+                  })
+                }
               >
-                <option value="">No dependency</option>
+                <option value="" className="bg-background">
+                  No dependency
+                </option>
                 {schema.fields
-                  .filter(f => f.id !== field.id)
-                  .map(f => (
-                    <option key={f.id} value={f.id}>{f.label}</option>
+                  .filter((f) => f.id !== field.id)
+                  .map((f) => (
+                    <option key={f.id} value={f.id} className="bg-background">
+                      {f.label}
+                    </option>
                   ))}
               </select>
             </div>
-            
+
             {field.conditional?.dependsOn && (
               <>
                 <div>
-                  <Label htmlFor="condition" className="text-xs">Condition</Label>
+                  <Label htmlFor="condition" className="text-xs">
+                    Condition
+                  </Label>
                   <select
                     id="condition"
                     className="w-full px-3 py-2 border rounded-md text-sm"
                     value={field.conditional.condition}
-                    onChange={(e) => updateField(field.id, {
-                      conditional: {
-                        dependsOn: field.conditional!.dependsOn,
-                        condition: e.target.value as any,
-                        value: field.conditional!.value || ''
-                      }
-                    })}
+                    onChange={(e) =>
+                      updateField(field.id, {
+                        conditional: {
+                          dependsOn: field.conditional!.dependsOn,
+                          condition: e.target.value as any,
+                          value: field.conditional!.value || "",
+                        },
+                      })
+                    }
                   >
-                    <option value="equals">Equals</option>
-                    <option value="not_equals">Not equals</option>
-                    <option value="contains">Contains</option>
-                    <option value="not_empty">Is not empty</option>
+                    <option value="equals" className="bg-background">
+                      Equals
+                    </option>
+                    <option value="not_equals" className="bg-background">
+                      Not equals
+                    </option>
+                    <option value="contains" className="bg-background">
+                      Contains
+                    </option>
+                    <option value="not_empty" className="bg-background">
+                      Is not empty
+                    </option>
                   </select>
                 </div>
-                
-                {field.conditional.condition !== 'not_empty' && (
+
+                {field.conditional.condition !== "not_empty" && (
                   <div>
-                    <Label htmlFor="condition-value" className="text-xs">Value</Label>
+                    <Label htmlFor="condition-value" className="text-xs">
+                      Value
+                    </Label>
                     <Input
                       id="condition-value"
                       placeholder="Condition value"
-                      value={field.conditional.value || ''}
-                      onChange={(e) => updateField(field.id, {
-                        conditional: {
-                          dependsOn: field.conditional!.dependsOn,
-                          condition: field.conditional!.condition,
-                          value: e.target.value
-                        }
-                      })}
+                      value={field.conditional.value || ""}
+                      onChange={(e) =>
+                        updateField(field.id, {
+                          conditional: {
+                            dependsOn: field.conditional!.dependsOn,
+                            condition: field.conditional!.condition,
+                            value: e.target.value,
+                          },
+                        })
+                      }
                     />
                   </div>
                 )}

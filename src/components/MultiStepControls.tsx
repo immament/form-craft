@@ -1,21 +1,21 @@
-import { useFormStore } from "@/store/formStore";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  useFormCraftCurrentStep,
+  useFormCraftSchema,
+  useFormCraftStoreActions,
+} from "@/store/FormCraftStoreProvider";
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 
 export function MultiStepControls() {
-  const {
-    schema,
-    currentStep,
-    toggleMultiStep,
-    addStep,
-    removeStep,
-    updateStep,
-    setCurrentStep,
-  } = useFormStore();
+  const { toggleMultiStep, addStep, removeStep, updateStep, setCurrentStep } =
+    useFormCraftStoreActions();
+
+  const schema = useFormCraftSchema();
+  const currentStep = useFormCraftCurrentStep();
 
   if (!schema.isMultiStep) {
     return (

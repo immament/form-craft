@@ -1,15 +1,15 @@
-import { useForm } from "react-hook-form";
-import { useFormStore } from "@/store/formStore";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye } from "lucide-react";
+import { useFormCraftSchema } from "@/store/FormCraftStoreProvider";
 import { FormField } from "@/types";
+import { Eye } from "lucide-react";
+import { useForm } from "react-hook-form";
 
 export function FormPreview() {
-  const { schema } = useFormStore();
+  const schema = useFormCraftSchema();
   const {
     register,
     handleSubmit,

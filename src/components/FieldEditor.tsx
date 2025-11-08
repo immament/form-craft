@@ -1,15 +1,16 @@
-import { useFormStore } from "@/store/formStore";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
 
-import { Plus, X } from "lucide-react";
+import { Plus, X, XIcon } from "lucide-react";
 import { useState } from "react";
 
 export function FieldEditor() {
-  const { schema, selectedField, updateField, selectField } = useFormStore();
+  const { schema, selectedField, updateField, selectField } =
+    useFormCraftStoreActions();
   const [newOption, setNewOption] = useState("");
 
   const field = schema.fields.find((f) => f.id === selectedField);
@@ -51,15 +52,17 @@ export function FieldEditor() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Field Properties</CardTitle>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => selectField(null)}
-          className="w-fit"
-        >
-          Close
-        </Button>
+        <CardTitle className="text-lg flex items-center">
+          <span className="flex-1">Field Properties</span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => selectField(null)}
+          >
+            <XIcon className="h-6 w-6" />
+            <span className="sr-only">Close</span>
+          </Button>
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>

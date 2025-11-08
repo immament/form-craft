@@ -1,18 +1,18 @@
-import { useDraggable } from "@dnd-kit/core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
 import { FormField } from "@/types";
+import { useDraggable } from "@dnd-kit/core";
 import {
-  Type,
-  Mail,
-  Hash,
-  ChevronDown,
   CheckSquare,
-  FileText,
+  ChevronDown,
   Circle,
+  FileText,
+  Hash,
+  Mail,
   PlusIcon,
+  Type,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { useFormStore } from "@/store/formStore";
 
 const fieldTypes: Array<{
   type: FormField["type"];
@@ -73,7 +73,7 @@ function DraggableField({
     data: { type: "field", fieldType: type },
   });
 
-  const { addField } = useFormStore();
+  const { addField } = useFormCraftStoreActions();
 
   return (
     <div className="flex items-center">

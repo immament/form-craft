@@ -1,3 +1,13 @@
+import { ExportPanel } from "@/components/ExportPanel";
+import { FieldEditor } from "@/components/FieldEditor";
+import { FieldPalette } from "@/components/FieldPalette";
+import { FormCanvas } from "@/components/FormCanvas";
+import { FormPreview } from "@/components/FormPreview";
+import { FormTemplates } from "@/components/FormTemplates";
+import { MultiStepControls } from "@/components/MultiStepControls";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { generateId } from "@/lib/utils";
+import { FormField } from "@/types";
 import {
   DndContext,
   DragEndEvent,
@@ -9,20 +19,10 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { useState } from "react";
-import { useFormStore } from "@/store/formStore";
-import { FieldPalette } from "@/components/FieldPalette";
-import { FormCanvas } from "@/components/FormCanvas";
-import { FieldEditor } from "@/components/FieldEditor";
-import { ExportPanel } from "@/components/ExportPanel";
-import { FormTemplates } from "@/components/FormTemplates";
-import { FormPreview } from "@/components/FormPreview";
-import { MultiStepControls } from "@/components/MultiStepControls";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { FormField } from "@/types";
-import { generateId } from "@/lib/utils";
+import { useFormCraftStoreActions } from "./store/FormCraftStoreProvider";
 
 function App() {
-  const { addField, reorderFields } = useFormStore();
+  const { addField, reorderFields } = useFormCraftStoreActions();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [draggedField, setDraggedField] = useState<FormField | null>(null);
 
@@ -95,8 +95,8 @@ function App() {
             <div>
               <h1 className="text-2xl font-bold">Form Builder</h1>
               <p className="text-muted-foreground">
-                Drag and drop fields to create your form, then export as JSON schema
-                or React component
+                Drag and drop fields to create your form, then export as JSON
+                schema or React component
               </p>
             </div>
             <ThemeToggle />

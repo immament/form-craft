@@ -1,9 +1,9 @@
-import { useFormStore } from "@/store/formStore";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FormSchema } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateId } from "@/lib/utils";
-import { FileText, User, MessageSquare, ShoppingCart } from "lucide-react";
+import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
+import { FormSchema } from "@/types";
+import { FileText, MessageSquare, ShoppingCart, User } from "lucide-react";
 
 const templates: Array<{
   name: string;
@@ -174,7 +174,7 @@ const templates: Array<{
 ];
 
 export function FormTemplates() {
-  const { loadTemplate } = useFormStore();
+  const { loadTemplate } = useFormCraftStoreActions();
 
   return (
     <Card>

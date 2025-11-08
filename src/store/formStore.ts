@@ -1,8 +1,8 @@
-import { create } from "zustand";
-import { FormField, FormSchema, FormStep } from "@/types";
 import { generateId } from "@/lib/utils";
+import { FormField, FormSchema, FormStep } from "@/types";
+import { create } from "zustand";
 
-interface FormStore {
+export interface FormStore {
   schema: FormSchema;
   selectedField: string | null;
   currentStep: number;
@@ -25,7 +25,7 @@ interface FormStore {
   exportReactComponent: () => string;
 }
 
-export const useFormStore = create<FormStore>((set, get) => ({
+export const useFormStoreOld = create<FormStore>((set, get) => ({
   schema: {
     id: generateId(),
     title: "Untitled Form",

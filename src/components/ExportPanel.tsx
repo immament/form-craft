@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { useFormStore } from "@/store/formStore";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, Code, FileJson } from "lucide-react";
+import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
+import { Code, Download, FileJson } from "lucide-react";
+import { useState } from "react";
 
 export function ExportPanel() {
   const { exportSchema, exportReactComponent, regenerateFieldIds } =
-    useFormStore();
+    useFormCraftStoreActions();
   const [exportType, setExportType] = useState<"schema" | "component">(
     "schema"
   );

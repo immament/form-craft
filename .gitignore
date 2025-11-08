@@ -18,6 +18,8 @@ dist-ssr
 dist-web
 dist-lib
 *.local
+/lib
+/lib-tsc
 
 # Environment variables
 .env

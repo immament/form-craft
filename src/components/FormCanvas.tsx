@@ -1,16 +1,22 @@
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  useFormCraftCurrentStep,
+  useFormCraftSchema,
+  useFormCraftStoreActions,
+} from "@/store/FormCraftStoreProvider";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useFormStore } from "@/store/formStore";
 import { SortableField } from "./SortableField";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export function FormCanvas() {
-  const { schema, updateSchema, currentStep } = useFormStore();
+  const { updateSchema } = useFormCraftStoreActions();
+  const schema = useFormCraftSchema();
+  const currentStep = useFormCraftCurrentStep();
   const { setNodeRef, over } = useDroppable({ id: "form-canvas" });
 
   // Get current fields based on mode

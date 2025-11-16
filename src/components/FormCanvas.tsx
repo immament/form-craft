@@ -4,24 +4,30 @@ import { Label } from "@/components/ui/label";
 import {
   useFormCraftSchema,
   useFormCraftStoreActions,
+  useFormCraftUiSchema,
 } from "@/store/FormCraftStoreProvider";
 import { useDroppable } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext } from "@dnd-kit/sortable";
 import { useMemo } from "react";
 import { SortableField } from "./SortableField";
 
 export function FormCanvas() {
   const { updateSchema } = useFormCraftStoreActions();
   const schema = useFormCraftSchema();
-  // const currentStep = useFormCraftCurrentStep();
+  const uiSchema = useFormCraftUiSchema();
   const { setNodeRef, over } = useDroppable({ id: "form-canvas" });
+  console.log("FormCanvas order:", uiSchema["ui:order"]);
 
   // Get current fields based on mode
   const currentFields = useMemo(
-    () => Object.values(schema.properties),
+    () =>
+      Object.values(schema.properties).map((f) => {
+        return {
+          field: f,
+          uiField: uiSchema[f.$id] ?? {},
+          isRequired: schema.required.includes(f.$id),
+        };
+      }),
     [schema.properties]
   );
   // schema.isMultiStep && schema.steps
@@ -68,12 +74,24 @@ export function FormCanvas() {
             </div>
           ) : (
             <SortableContext
-              items={currentFields.map((f) => f.$id)}
-              strategy={verticalListSortingStrategy}
+              items={uiSchema["ui:order"]}
+              // strategy={verticalListSortingStrategy}
             >
-              {currentFields.map((field) => (
-                <SortableField key={field.$id} field={field} />
+              {uiSchema["ui:order"].map((key) => (
+                <SortableField
+                  key={key}
+                  field={schema.properties[key]}
+                  uiField={uiSchema[key] ?? {}}
+                  isRequired={false /*TODO*/}
+                />
               ))}
+              {/* {currentFields.map(({ field, uiField, isRequired }) => (
+                <SortableField
+                  key={field.$id}
+                  field={field}
+                  uiField={uiField}
+                  isRequired={isRequired}
+                /> */}
             </SortableContext>
           )}
         </div>

@@ -21,7 +21,7 @@ type ProcessFormState = {
 };
 
 export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
-  console.log("JsonFormExt ++");
+  // console.log("JsonFormExt ++");
 
   const conditionalFields = useMemo(() => {
     const result = props.uiSchema && pickConditionalFields(props.uiSchema);
@@ -71,7 +71,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
 
   if (!state) return <></>;
 
-  console.log("JsonFormExt render:", state.schema.properties);
+  // console.log("JsonFormExt render:", state.schema.properties);
 
   return (
     <ShadcnForm

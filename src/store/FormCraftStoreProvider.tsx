@@ -1,11 +1,9 @@
 import { generateId } from "@/lib/my-utils";
 import { AppUiSchema, FormSchema } from "@/types";
-import { JSONSchema7 } from "json-schema";
 import { createContext, PropsWithChildren, useContext, useState } from "react";
 import { createStore, Mutate, StoreApi, useStore } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { store_createActions } from "./createActions";
-import { createFormStoreMultiStepActions } from "./createFormStoreMultiStepActions";
 import { FormStore, FormStoreActions } from "./FormStore";
 
 export type FormCraftStoreType = Mutate<
@@ -43,13 +41,11 @@ function createFormCraftStore(initSchema: FormSchema | undefined) {
         definitions: {},
         required: [],
       },
-      jsonSchema: {},
       uiSchema: { ["ui:order"]: [] },
       selectedField: null,
-      currentStep: 0,
+      // currentStep: 0,
       actions: {
         ...store_createActions(set, get),
-        ...createFormStoreMultiStepActions(set),
       },
     }))
   );
@@ -72,14 +68,14 @@ export const useFormCraftStoreActions: () => FormStoreActions = () =>
 export const useFormCraftSchema: () => FormSchema = () =>
   useFormCraftStoreInContext((state) => state.schema);
 
-export const useFormCraftJsonSchema: () => JSONSchema7 = () =>
-  useFormCraftStoreInContext((state) => state.jsonSchema);
-
 export const useFormCraftUiSchema: () => AppUiSchema = () =>
   useFormCraftStoreInContext((state) => state.uiSchema);
 
-export const useFormCraftCurrentStep: () => number = () =>
-  useFormCraftStoreInContext((state) => state.currentStep);
-
 export const useFormCraftSelectedField: () => string | null = () =>
   useFormCraftStoreInContext((state) => state.selectedField);
+
+// export const useFormCraftJsonSchema: () => JSONSchema7 = () =>
+//   useFormCraftStoreInContext((state) => state.jsonSchema);
+
+// export const useFormCraftCurrentStep: () => number = () =>
+//   useFormCraftStoreInContext((state) => state.currentStep);

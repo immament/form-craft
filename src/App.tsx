@@ -2,16 +2,14 @@ import { ExportPanel } from "@/components/ExportPanel";
 import { FieldEditor } from "@/components/FieldEditor";
 import { FieldPalette } from "@/components/FieldPalette";
 import { FormCanvas } from "@/components/FormCanvas";
-import { FormPreviewOld } from "@/components/FormPreview.old";
+// import { FormPreviewOld } from "@/components/FormPreview.old";
 import { FormTemplates } from "@/components/FormTemplates";
-import { MultiStepControls } from "@/components/MultiStepControls";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { generateId } from "@/lib/my-utils";
-import { FormField } from "@/types";
+import { AppUiSchemaField, FormField } from "@/types";
 import {
   DndContext,
   DragEndEvent,
-  DragOverEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
@@ -21,10 +19,12 @@ import {
 import { useState } from "react";
 import { useFormCraftStoreActions } from "./store/FormCraftStoreProvider";
 
+type DraggedField = { field: FormField; uiField: AppUiSchemaField } | null;
+
 function App() {
-  const { addField, reorderFields } = useFormCraftStoreActions();
+  const { reorderFields } = useFormCraftStoreActions();
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [draggedField, setDraggedField] = useState<FormField | null>(null);
+  const [draggedField, setDraggedField] = useState<DraggedField | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -38,30 +38,35 @@ function App() {
     setActiveId(event.active.id as string);
 
     if (event.active.data.current?.type === "field") {
-      const fieldType = event.active.data.current.fieldType;
+      const widget = event.active.data.current.fieldType;
       setDraggedField({
-        $id: generateId(),
-        ui_widget: fieldType,
-        type: "string",
-        title: `New ${fieldType} field`,
-        ext_required: false,
-        ...(fieldType === "select" || fieldType === "radio"
-          ? { enum: ["Option 1", "Option 2"] }
-          : {}),
+        field: {
+          $id: generateId(),
+          // ui_widget: fieldType,
+          type: "string",
+          title: `New ${widget} field`,
+          // ext_required: false,
+          ...(widget === "select" || widget === "radio"
+            ? { enum: ["Option 1", "Option 2"] }
+            : {}),
+        },
+        uiField: {
+          ["ui:widget"]: widget,
+        },
       });
     }
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
+  // const handleDragOver = (event: DragOverEvent) => {
+  //   const { active, over } = event;
 
-    if (!over) return;
+  //   if (!over) return;
 
-    // Handle dragging from palette to canvas
-    if (active.data.current?.type === "field" && over.id === "form-canvas") {
-      // This is handled in dragEnd
-    }
-  };
+  //   // Handle dragging from palette to canvas
+  //   if (active.data.current?.type === "field" && over.id === "form-canvas") {
+  //     // This is handled in dragEnd
+  //   }
+  // };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -75,7 +80,7 @@ function App() {
     // Handle dropping from palette to canvas
     if (active.data.current?.type === "field" && over.id === "form-canvas") {
       if (draggedField) {
-        addField(draggedField);
+        // addField(draggedField);
       }
     }
 
@@ -108,19 +113,19 @@ function App() {
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
+        // onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
         <div className="container mx-auto p-4">
           <div className="flex gap-4">
             <div className="space-y-4">
               <FormTemplates />
-              <MultiStepControls />
+              {/* <MultiStepControls /> */}
               <FieldPalette />
             </div>
             <FormCanvas />
             <div className="space-y-4">
-              <FormPreviewOld />
+              {/* <FormPreviewOld /> */}
               <FieldEditor />
               <ExportPanel />
             </div>
@@ -130,9 +135,9 @@ function App() {
         <DragOverlay>
           {activeId && draggedField ? (
             <div className="bg-card border rounded-lg p-4 shadow-lg">
-              <div className="font-medium">{draggedField.title}</div>
+              <div className="font-medium">{draggedField.field.title}</div>
               <div className="text-sm text-muted-foreground capitalize">
-                {draggedField.ui_widget} field
+                {draggedField.field.title} field
               </div>
             </div>
           ) : null}

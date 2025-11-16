@@ -7,30 +7,43 @@ import {
   useFormCraftSchema,
   useFormCraftSelectedField,
   useFormCraftStoreActions,
+  useFormCraftUiSchema,
 } from "@/store/FormCraftStoreProvider";
-import { FormField } from "@/types";
+import { AppUiSchemaField, FormField, FormFieldUpdate } from "@/types";
 
 import { Plus, X, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export function FieldEditor() {
-  const { updateField, selectField } = useFormCraftStoreActions();
-  const schema = useFormCraftSchema();
+  const { updateField, selectField, updateRequiredField, updateFieldUi } =
+    useFormCraftStoreActions();
+  const { properties: schemaProperties, required } = useFormCraftSchema();
+
+  const uiSchema2 = useFormCraftUiSchema();
   // const { "ui:order": uiOrder } = useFormCraftUiSchema();
 
   const selectedField = useFormCraftSelectedField();
   const [newOption, setNewOption] = useState("");
 
   const field: FormField | undefined = useMemo(
-    () => (selectedField ? schema.properties[selectedField] : undefined),
-    [schema.properties, selectedField]
+    () => (selectedField ? schemaProperties[selectedField] : undefined),
+    [schemaProperties, selectedField]
   );
-  const properties = useMemo(
-    () => Object.values(schema.properties),
-    [schema.properties, selectedField]
+  const uiField: AppUiSchemaField | undefined = useMemo(
+    () => (selectedField ? uiSchema2[selectedField] ?? {} : undefined),
+    [uiSchema2, selectedField]
   );
 
-  if (!field) {
+  const properties = useMemo(
+    () => Object.values(schemaProperties),
+    [schemaProperties]
+  );
+
+  const isRequired = useMemo(() => {
+    return selectedField ? required.includes("selectedField") : false;
+  }, [required, selectedField]);
+
+  if (!field || !uiField) {
     return (
       <Card>
         <CardHeader>
@@ -44,6 +57,8 @@ export function FieldEditor() {
       </Card>
     );
   }
+
+  console.log("FieldEditor", field, uiField);
 
   const addOption = () => {
     if (newOption.trim()) {
@@ -63,7 +78,7 @@ export function FieldEditor() {
   };
 
   const needsOptions =
-    field.ui_widget === "select" || field.ui_widget === "radio";
+    uiField["ui:widget"] === "select" || uiField["ui:widget"] === "radio";
 
   return (
     <Card>
@@ -90,14 +105,14 @@ export function FieldEditor() {
           />
         </div>
 
-        {field.ui_widget !== "checkbox" && (
+        {uiField["ui:widget"] !== "checkbox" && (
           <div>
             <Label htmlFor="field-placeholder">Placeholder</Label>
             <Input
               id="field-placeholder"
-              value={field.ui_placeholder || ""}
+              value={uiField["ui:placeholder"] || ""}
               onChange={(e) =>
-                updateField(field.$id, { ui_placeholder: e.target.value })
+                updateFieldUi(field.$id, { ["ui:placeholder"]: e.target.value })
               }
             />
           </div>
@@ -106,9 +121,9 @@ export function FieldEditor() {
         <div className="flex items-center space-x-2">
           <Switch
             id="field-required"
-            checked={field.ext_required || false}
+            checked={isRequired}
             onCheckedChange={(checked) =>
-              updateField(field.$id, { ext_required: checked })
+              updateRequiredField(field.$id, checked)
             }
           />
           <Label htmlFor="field-required">Required</Label>
@@ -158,87 +173,14 @@ export function FieldEditor() {
           </div>
         )}
 
-        {(field.ui_widget === "text" ||
-          field.ui_widget === "updown" ||
-          field.ui_widget === "password" ||
-          field.ui_widget === "textarea") && (
-          <div className="space-y-3">
-            <Label>Validation Rules</Label>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="min-length" className="text-xs">
-                  Min Length
-                </Label>
-                <Input
-                  id="min-length"
-                  type="number"
-                  placeholder="Min"
-                  value={field.minLength || ""}
-                  onChange={(e) =>
-                    updateField(field.$id, {
-                      minLength: e.target.value
-                        ? parseInt(e.target.value)
-                        : undefined,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="max-length" className="text-xs">
-                  Max Length
-                </Label>
-                <Input
-                  id="max-length"
-                  type="number"
-                  placeholder="Max"
-                  value={field.maxLength || ""}
-                  onChange={(e) =>
-                    updateField(field.$id, {
-                      maxLength: e.target.value
-                        ? parseInt(e.target.value)
-                        : undefined,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="pattern" className="text-xs">
-                Regex Pattern
-              </Label>
-              <Input
-                id="pattern"
-                placeholder="e.g., ^[A-Za-z]+$"
-                value={field.pattern || ""}
-                onChange={(e) =>
-                  updateField(field.$id, {
-                    pattern: e.target.value || undefined,
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="custom-message" className="text-xs">
-                Custom Error Message
-              </Label>
-              <Input
-                id="custom-message"
-                placeholder="Custom validation message"
-                value={field.message || ""}
-                onChange={(e) =>
-                  updateField(field.$id, {
-                    message: e.target.value || undefined,
-                  })
-                }
-              />
-            </div>
-          </div>
+        {(uiField["ui:widget"] === "text" ||
+          uiField["ui:widget"] === "updown" ||
+          uiField["ui:widget"] === "password" ||
+          uiField["ui:widget"] === "textarea") && (
+          <ValidationRules field={field} updateField={updateField} />
         )}
 
-        {field.ui_widget === "email" && (
+        {uiField["ui:widget"] === "email" && (
           <div>
             <Label htmlFor="email-message" className="text-xs">
               Custom Email Error Message
@@ -266,9 +208,9 @@ export function FieldEditor() {
               <select
                 id="depends-on"
                 className="w-full px-3 py-2 border rounded-md text-sm"
-                value={field.conditional?.dependsOn || ""}
+                value={uiField.conditional?.dependsOn || ""}
                 onChange={(e) =>
-                  updateField(field.$id, {
+                  updateFieldUi(field.$id, {
                     conditional: e.target.value
                       ? {
                           dependsOn: e.target.value,
@@ -297,7 +239,7 @@ export function FieldEditor() {
               </select>
             </div>
 
-            {field.conditional?.dependsOn && (
+            {uiField.conditional?.dependsOn && (
               <>
                 <div>
                   <Label htmlFor="condition" className="text-xs">
@@ -306,13 +248,13 @@ export function FieldEditor() {
                   <select
                     id="condition"
                     className="w-full px-3 py-2 border rounded-md text-sm"
-                    value={field.conditional.condition}
+                    value={uiField.conditional.condition}
                     onChange={(e) =>
-                      updateField(field.$id, {
+                      updateFieldUi(field.$id, {
                         conditional: {
-                          dependsOn: field.conditional!.dependsOn,
+                          dependsOn: uiField.conditional!.dependsOn,
                           condition: e.target.value as any,
-                          value: field.conditional!.value || "",
+                          value: uiField.conditional!.value || "",
                         },
                       })
                     }
@@ -355,7 +297,7 @@ export function FieldEditor() {
                   </select>
                 </div>
 
-                {field.conditional.condition !== "not_empty" && (
+                {uiField.conditional.condition !== "not_empty" && (
                   <div>
                     <Label htmlFor="condition-value" className="text-xs">
                       Value
@@ -363,12 +305,12 @@ export function FieldEditor() {
                     <Input
                       id="condition-value"
                       placeholder="Condition value"
-                      value={field.conditional.value || ""}
+                      value={uiField.conditional.value || ""}
                       onChange={(e) =>
-                        updateField(field.$id, {
+                        updateFieldUi(field.$id, {
                           conditional: {
-                            dependsOn: field.conditional!.dependsOn,
-                            condition: field.conditional!.condition,
+                            dependsOn: uiField.conditional!.dependsOn,
+                            condition: uiField.conditional!.condition,
                             value: e.target.value,
                           },
                         })
@@ -382,5 +324,90 @@ export function FieldEditor() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function ValidationRules({
+  field,
+  updateField,
+}: {
+  field: FormField;
+  updateField: (id: string, updates: FormFieldUpdate) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <Label>Validation Rules</Label>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label htmlFor="min-length" className="text-xs">
+            Min Length
+          </Label>
+          <Input
+            id="min-length"
+            type="number"
+            placeholder="Min"
+            value={field.minLength || ""}
+            onChange={(e) =>
+              updateField(field.$id, {
+                minLength: e.target.value
+                  ? parseInt(e.target.value)
+                  : undefined,
+              })
+            }
+          />
+        </div>
+        <div>
+          <Label htmlFor="max-length" className="text-xs">
+            Max Length
+          </Label>
+          <Input
+            id="max-length"
+            type="number"
+            placeholder="Max"
+            value={field.maxLength || ""}
+            onChange={(e) =>
+              updateField(field.$id, {
+                maxLength: e.target.value
+                  ? parseInt(e.target.value)
+                  : undefined,
+              })
+            }
+          />
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="pattern" className="text-xs">
+          Regex Pattern
+        </Label>
+        <Input
+          id="pattern"
+          placeholder="e.g., ^[A-Za-z]+$"
+          value={field.pattern || ""}
+          onChange={(e) =>
+            updateField(field.$id, {
+              pattern: e.target.value || undefined,
+            })
+          }
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="custom-message" className="text-xs">
+          Custom Error Message
+        </Label>
+        <Input
+          id="custom-message"
+          placeholder="Custom validation message"
+          value={field.message || ""}
+          onChange={(e) =>
+            updateField(field.$id, {
+              message: e.target.value || undefined,
+            })
+          }
+        />
+      </div>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
-import { DragItem, FormField } from "@/types";
+import { AppUiSchemaField, DragItem, FormField } from "@/types";
 import { useDraggable } from "@dnd-kit/core";
 import {
   CheckSquare,
@@ -15,16 +15,25 @@ import {
 import { Button } from "./ui/button";
 
 const fieldTypes: Array<{
-  widget: FormField["ui_widget"];
+  widget: AppUiSchemaField["ui:widget"];
   label: string;
   icon: React.ReactNode;
-  dataType?: FormField["type"];
+  type?: FormField["type"];
 }> = [
   { widget: "text", label: "Text Input", icon: <Type className="w-4 h-4" /> },
   { widget: "email", label: "Email", icon: <Mail className="w-4 h-4" /> },
-  { widget: "password", label: "Password", icon: <Type className="w-4 h-4" /> },
-  { widget: "updown", label: "Number", icon: <Hash className="w-4 h-4" /> },
-  { widget: "tel", label: "Phone", icon: <Hash className="w-4 h-4" /> },
+  {
+    widget: "password",
+    label: "Password",
+    icon: <Type className="w-4 h-4" />,
+  },
+  {
+    widget: "updown",
+    label: "Number",
+    icon: <Hash className="w-4 h-4" />,
+    type: "number",
+  },
+  // { widget: "tel", label: "Phone", icon: <Hash className="w-4 h-4" /> },
   { widget: "uri", label: "URL", icon: <Type className="w-4 h-4" /> },
   { widget: "date", label: "Date", icon: <Type className="w-4 h-4" /> },
   { widget: "time", label: "Time", icon: <Type className="w-4 h-4" /> },
@@ -47,6 +56,7 @@ const fieldTypes: Array<{
     widget: "checkbox",
     label: "Checkbox",
     icon: <CheckSquare className="w-4 h-4" />,
+    type: "boolean",
   },
   {
     widget: "textarea",
@@ -60,25 +70,46 @@ const fieldTypes: Array<{
   },
 ];
 
+export function FieldPalette() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Field Types</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {fieldTypes.map(({ widget, label, icon, type }) => (
+          <DraggableField
+            key={`${widget}_${type}`}
+            widget={widget}
+            title={label}
+            icon={icon}
+            type={type}
+          />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 function DraggableField({
   widget,
   title,
   icon,
-  dataType,
+  type,
 }: {
-  widget: FormField["ui_widget"];
+  widget: AppUiSchemaField["ui:widget"];
   title: string;
   icon: React.ReactNode;
-  dataType?: FormField["type"];
+  type: FormField["type"] | undefined;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `palette-${widget}`,
     data: {
       id: `palette-${widget}`,
-      type: "field",
-      ui_widget: widget,
-      dataType: dataType ?? "string",
-      title: title,
+      dragType: "field",
+      widget,
+      type: type ?? "string",
+      title,
     } as DragItem,
   });
 
@@ -105,41 +136,20 @@ function DraggableField({
         title="Add Field"
         onClick={(e) => {
           e.preventDefault();
-          console.log("add field");
-          addField({
-            type: dataType ?? "string",
-            ui_widget: widget,
-            title: `New ${widget} field x`,
-            ext_required: false,
-            ...(widget === "select" || widget === "radio"
-              ? { enum: ["Option 1", "Option 2"] }
-              : {}),
-          });
+          addField(
+            {
+              type: type ?? "string",
+              title: `New ${widget} field x`,
+              ...(widget === "select" || widget === "radio"
+                ? { enum: ["Option 1", "Option 2"] }
+                : {}),
+            },
+            { ["ui:widget"]: widget }
+          );
         }}
       >
         <PlusIcon className="w-4 h-4" />
       </Button>
     </div>
-  );
-}
-
-export function FieldPalette() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Field Types</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {fieldTypes.map(({ widget, label, icon, dataType }) => (
-          <DraggableField
-            key={`${widget}_${dataType}`}
-            widget={widget}
-            title={label}
-            icon={icon}
-            dataType={dataType}
-          />
-        ))}
-      </CardContent>
-    </Card>
   );
 }

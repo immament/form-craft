@@ -6,7 +6,7 @@ import {
   useFormCraftSelectedField,
   useFormCraftStoreActions,
 } from "@/store/FormCraftStoreProvider";
-import { DragItem, FormField } from "@/types";
+import { AppUiSchemaField, DragItem, FormField } from "@/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Settings, Trash2 } from "lucide-react";
@@ -14,10 +14,18 @@ import { JSX, MouseEventHandler, useMemo } from "react";
 
 interface SortableFieldProps {
   field: FormField;
+  uiField: AppUiSchemaField;
+  isRequired: boolean;
   isClone?: boolean;
 }
 
-export function SortableField({ field, isClone }: SortableFieldProps) {
+export function SortableField({
+  field,
+  uiField,
+  isRequired,
+  isClone,
+}: SortableFieldProps) {
+  // console.log("SortableField", field.$id, uiField);
   const { selectField, removeField } = useFormCraftStoreActions();
   const selectedField = useFormCraftSelectedField();
   const {
@@ -31,8 +39,9 @@ export function SortableField({ field, isClone }: SortableFieldProps) {
     id: field.$id,
     data: {
       id: field.$id,
-      type: "sorting",
-      dataType: field.type,
+      dragType: "sorting",
+      type: field.type,
+      widget: uiField["ui:widget"],
       // ui_widget: field.ui_widget,
       title: field.title,
     } as DragItem,
@@ -63,7 +72,6 @@ export function SortableField({ field, isClone }: SortableFieldProps) {
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center space-x-2">
-            {isDragging && "isDragging"}
             <button
               {...attributes}
               {...listeners}
@@ -74,10 +82,8 @@ export function SortableField({ field, isClone }: SortableFieldProps) {
             <div>
               <Label className="text-sm font-medium">
                 {field.title}
-                {field.ext_required && (
-                  <span className="text-red-500 ml-1">*</span>
-                )}
-                {field.conditional && (
+                {isRequired && <span className="text-red-500 ml-1">*</span>}
+                {uiField.conditional && (
                   <span className="text-xs text-blue-500 ml-2">
                     (Conditional)
                   </span>
@@ -107,12 +113,12 @@ export function SortableField({ field, isClone }: SortableFieldProps) {
           )}
         </div>
         <div className="mt-2">
-          {field.ui_widget !== "checkbox" && (
+          {uiField["ui:widget"] !== "checkbox" && (
             <Label className="text-sm font-medium mb-1 block">
               {field.title}
             </Label>
           )}
-          <RenderFieldPreview field={field} />
+          <RenderFieldPreview field={field} uiField={uiField} />
         </div>
       </CardContent>
     </Card>
@@ -121,10 +127,12 @@ export function SortableField({ field, isClone }: SortableFieldProps) {
 
 function RenderFieldPreview({
   field,
+  uiField,
 }: {
   field: FormField;
+  uiField: AppUiSchemaField;
 }): JSX.Element | null {
-  switch (field.ui_widget) {
+  switch (uiField["ui:widget"]) {
     case "text":
     case "email":
     case "password":
@@ -137,9 +145,9 @@ function RenderFieldPreview({
     case "data-url":
       return (
         <Input
-          type={field.ui_widget}
+          type={uiField["ui:widget"]}
           placeholder={
-            field.ui_placeholder || `Enter ${field.title.toLowerCase()}`
+            uiField["ui:placeholder"] || `Enter ${field.title.toLowerCase()}`
           }
           disabled
         />
@@ -149,7 +157,7 @@ function RenderFieldPreview({
         <textarea
           className="w-full px-3 py-2 border rounded-md resize-none"
           placeholder={
-            field.ui_placeholder || `Enter ${field.title.toLowerCase()}`
+            uiField["ui:placeholder"] || `Enter ${field.title.toLowerCase()}`
           }
           rows={2}
           disabled

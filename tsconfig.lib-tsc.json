@@ -21,8 +21,8 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.lib-tsc.tsbuildinfo"
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src"]
 }

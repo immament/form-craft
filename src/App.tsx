@@ -2,11 +2,11 @@ import { ExportPanel } from "@/components/ExportPanel";
 import { FieldEditor } from "@/components/FieldEditor";
 import { FieldPalette } from "@/components/FieldPalette";
 import { FormCanvas } from "@/components/FormCanvas";
-import { FormPreview } from "@/components/FormPreview";
+import { FormPreviewOld } from "@/components/FormPreview.old";
 import { FormTemplates } from "@/components/FormTemplates";
 import { MultiStepControls } from "@/components/MultiStepControls";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { generateId } from "@/lib/utils";
+import { generateId } from "@/lib/my-utils";
 import { FormField } from "@/types";
 import {
   DndContext,
@@ -40,12 +40,13 @@ function App() {
     if (event.active.data.current?.type === "field") {
       const fieldType = event.active.data.current.fieldType;
       setDraggedField({
-        id: generateId(),
-        type: fieldType,
-        label: `New ${fieldType} field`,
-        required: false,
+        $id: generateId(),
+        ui_widget: fieldType,
+        type: "string",
+        title: `New ${fieldType} field`,
+        ext_required: false,
         ...(fieldType === "select" || fieldType === "radio"
-          ? { options: ["Option 1", "Option 2"] }
+          ? { enum: ["Option 1", "Option 2"] }
           : {}),
       });
     }
@@ -119,7 +120,7 @@ function App() {
             </div>
             <FormCanvas />
             <div className="space-y-4">
-              <FormPreview />
+              <FormPreviewOld />
               <FieldEditor />
               <ExportPanel />
             </div>
@@ -129,9 +130,9 @@ function App() {
         <DragOverlay>
           {activeId && draggedField ? (
             <div className="bg-card border rounded-lg p-4 shadow-lg">
-              <div className="font-medium">{draggedField.label}</div>
+              <div className="font-medium">{draggedField.title}</div>
               <div className="text-sm text-muted-foreground capitalize">
-                {draggedField.type} field
+                {draggedField.ui_widget} field
               </div>
             </div>
           ) : null}

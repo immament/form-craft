@@ -8,7 +8,7 @@ import { FormField } from "@/types";
 import { Eye } from "lucide-react";
 import { useForm } from "react-hook-form";
 
-export function FormPreview() {
+export function FormPreviewOld() {
   const schema = useFormCraftSchema();
   const {
     register,
@@ -44,29 +44,31 @@ export function FormPreview() {
   };
 
   const renderField = (field: FormField) => {
-    switch (field.type) {
+    switch (field.ui_widget) {
       case "text":
       case "email":
       case "password":
-      case "number":
+      case "updown":
       case "tel":
-      case "url":
+      case "uri":
       case "date":
       case "time":
-      case "datetimeLocal":
-      case "file":
+      case "date-time":
+      case "data-url":
         return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id}>
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+          <div key={field.$id} className="space-y-2">
+            <Label htmlFor={field.$id}>
+              {field.title}
+              {field.ext_required && (
+                <span className="text-red-500 ml-1">*</span>
+              )}
             </Label>
             <Input
-              id={field.id}
-              type={field.type}
-              placeholder={field.placeholder}
-              {...register(field.id, {
-                required: field.required,
+              id={field.$id}
+              type={field.ui_widget}
+              placeholder={field.ui_placeholder}
+              {...register(field.$id, {
+                required: field.ext_required,
                 minLength: field.validation?.min
                   ? {
                       value: field.validation.min,
@@ -91,9 +93,10 @@ export function FormPreview() {
                   : undefined,
               })}
             />
-            {errors[field.id] && (
+            {errors[field.$id] && (
               <span className="text-red-500 text-sm">
-                {(errors[field.id] as any)?.message || "This field is required"}
+                {(errors[field.$id] as any)?.message ||
+                  "This field is required"}
               </span>
             )}
           </div>
@@ -101,16 +104,18 @@ export function FormPreview() {
 
       case "textarea":
         return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id}>
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+          <div key={field.$id} className="space-y-2">
+            <Label htmlFor={field.$id}>
+              {field.title}
+              {field.ext_required && (
+                <span className="text-red-500 ml-1">*</span>
+              )}
             </Label>
             <Textarea
-              id={field.id}
-              placeholder={field.placeholder}
-              {...register(field.id, {
-                required: field.required,
+              id={field.$id}
+              placeholder={field.ui_placeholder}
+              {...register(field.$id, {
+                required: field.ext_required,
                 minLength: field.validation?.min
                   ? {
                       value: field.validation.min,
@@ -129,9 +134,10 @@ export function FormPreview() {
                   : undefined,
               })}
             />
-            {errors[field.id] && (
+            {errors[field.$id] && (
               <span className="text-red-500 text-sm">
-                {(errors[field.id] as any)?.message || "This field is required"}
+                {(errors[field.$id] as any)?.message ||
+                  "This field is required"}
               </span>
             )}
           </div>
@@ -139,26 +145,28 @@ export function FormPreview() {
 
       case "select":
         return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id}>
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+          <div key={field.$id} className="space-y-2">
+            <Label htmlFor={field.$id}>
+              {field.title}
+              {field.ext_required && (
+                <span className="text-red-500 ml-1">*</span>
+              )}
             </Label>
             <select
-              id={field.id}
-              {...register(field.id, { required: field.required })}
+              id={field.$id}
+              {...register(field.$id, { required: field.ext_required })}
               className="w-full px-3 py-2 border rounded-md"
             >
               <option value="" className="bg-background">
                 Select an option
               </option>
-              {field.options?.map((option: string, index: number) => (
+              {field.enum?.map((option: string | number, index: number) => (
                 <option key={index} value={option} className="bg-background">
                   {option}
                 </option>
               ))}
             </select>
-            {errors[field.id] && (
+            {errors[field.$id] && (
               <span className="text-red-500 text-sm">
                 This field is required
               </span>
@@ -168,22 +176,24 @@ export function FormPreview() {
 
       case "radio":
         return (
-          <div key={field.id} className="space-y-2">
+          <div key={field.$id} className="space-y-2">
             <Label>
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+              {field.title}
+              {field.ext_required && (
+                <span className="text-red-500 ml-1">*</span>
+              )}
             </Label>
             <div className="space-y-2">
-              {field.options?.map((option: string, index: number) => (
+              {field.enum?.map((option: string | number, index: number) => (
                 <div key={index} className="flex items-center space-x-2">
                   <input
                     type="radio"
-                    id={`${field.id}-${index}`}
+                    id={`${field.$id}-${index}`}
                     value={option}
-                    {...register(field.id, { required: field.required })}
+                    {...register(field.$id, { required: field.ext_required })}
                   />
                   <Label
-                    htmlFor={`${field.id}-${index}`}
+                    htmlFor={`${field.$id}-${index}`}
                     className="font-normal"
                   >
                     {option}
@@ -191,7 +201,7 @@ export function FormPreview() {
                 </div>
               ))}
             </div>
-            {errors[field.id] && (
+            {errors[field.$id] && (
               <span className="text-red-500 text-sm">
                 This field is required
               </span>
@@ -201,18 +211,20 @@ export function FormPreview() {
 
       case "checkbox":
         return (
-          <div key={field.id} className="flex items-center space-x-2">
+          <div key={field.$id} className="flex items-center space-x-2">
             <input
               type="checkbox"
-              id={field.id}
-              {...register(field.id, { required: field.required })}
+              id={field.$id}
+              {...register(field.$id, { required: field.ext_required })}
               className="rounded"
             />
-            <Label htmlFor={field.id} className="font-normal">
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+            <Label htmlFor={field.$id} className="font-normal">
+              {field.title}
+              {field.ext_required && (
+                <span className="text-red-500 ml-1">*</span>
+              )}
             </Label>
-            {errors[field.id] && (
+            {errors[field.$id] && (
               <span className="text-red-500 text-sm block">
                 This field is required
               </span>

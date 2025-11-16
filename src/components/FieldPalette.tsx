@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
-import { FormField } from "@/types";
+import { DragItem, FormField } from "@/types";
 import { useDraggable } from "@dnd-kit/core";
 import {
   CheckSquare,
@@ -15,62 +15,71 @@ import {
 import { Button } from "./ui/button";
 
 const fieldTypes: Array<{
-  type: FormField["type"];
+  widget: FormField["ui_widget"];
   label: string;
   icon: React.ReactNode;
+  dataType?: FormField["type"];
 }> = [
-  { type: "text", label: "Text Input", icon: <Type className="w-4 h-4" /> },
-  { type: "email", label: "Email", icon: <Mail className="w-4 h-4" /> },
-  { type: "password", label: "Password", icon: <Type className="w-4 h-4" /> },
-  { type: "number", label: "Number", icon: <Hash className="w-4 h-4" /> },
-  { type: "tel", label: "Phone", icon: <Hash className="w-4 h-4" /> },
-  { type: "url", label: "URL", icon: <Type className="w-4 h-4" /> },
-  { type: "date", label: "Date", icon: <Type className="w-4 h-4" /> },
-  { type: "time", label: "Time", icon: <Type className="w-4 h-4" /> },
+  { widget: "text", label: "Text Input", icon: <Type className="w-4 h-4" /> },
+  { widget: "email", label: "Email", icon: <Mail className="w-4 h-4" /> },
+  { widget: "password", label: "Password", icon: <Type className="w-4 h-4" /> },
+  { widget: "updown", label: "Number", icon: <Hash className="w-4 h-4" /> },
+  { widget: "tel", label: "Phone", icon: <Hash className="w-4 h-4" /> },
+  { widget: "uri", label: "URL", icon: <Type className="w-4 h-4" /> },
+  { widget: "date", label: "Date", icon: <Type className="w-4 h-4" /> },
+  { widget: "time", label: "Time", icon: <Type className="w-4 h-4" /> },
   {
-    type: "datetimeLocal",
+    widget: "date-time",
     label: "Date & Time",
     icon: <Type className="w-4 h-4" />,
   },
   {
-    type: "file",
+    widget: "data-url",
     label: "File Upload",
     icon: <FileText className="w-4 h-4" />,
   },
   {
-    type: "select",
+    widget: "select",
     label: "Dropdown",
     icon: <ChevronDown className="w-4 h-4" />,
   },
   {
-    type: "checkbox",
+    widget: "checkbox",
     label: "Checkbox",
     icon: <CheckSquare className="w-4 h-4" />,
   },
   {
-    type: "textarea",
+    widget: "textarea",
     label: "Text Area",
     icon: <FileText className="w-4 h-4" />,
   },
   {
-    type: "radio",
+    widget: "radio",
     label: "Radio Button",
     icon: <Circle className="w-4 h-4" />,
   },
 ];
 
 function DraggableField({
-  type,
-  label,
+  widget,
+  title,
   icon,
+  dataType,
 }: {
-  type: FormField["type"];
-  label: string;
+  widget: FormField["ui_widget"];
+  title: string;
   icon: React.ReactNode;
+  dataType?: FormField["type"];
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `palette-${type}`,
-    data: { type: "field", fieldType: type },
+    id: `palette-${widget}`,
+    data: {
+      id: `palette-${widget}`,
+      type: "field",
+      ui_widget: widget,
+      dataType: dataType ?? "string",
+      title: title,
+    } as DragItem,
   });
 
   const { addField } = useFormCraftStoreActions();
@@ -87,7 +96,7 @@ function DraggableField({
       >
         <div className="flex items-center space-x-2">
           {icon}
-          <span className="text-sm font-medium">{label}</span>
+          <span className="text-sm font-medium">{title}</span>
         </div>
       </div>
       <Button
@@ -98,11 +107,12 @@ function DraggableField({
           e.preventDefault();
           console.log("add field");
           addField({
-            type,
-            label: `New ${type} field`,
-            required: false,
-            ...(type === "select" || type === "radio"
-              ? { options: ["Option 1", "Option 2"] }
+            type: dataType ?? "string",
+            ui_widget: widget,
+            title: `New ${widget} field x`,
+            ext_required: false,
+            ...(widget === "select" || widget === "radio"
+              ? { enum: ["Option 1", "Option 2"] }
               : {}),
           });
         }}
@@ -120,8 +130,14 @@ export function FieldPalette() {
         <CardTitle className="text-lg">Field Types</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {fieldTypes.map(({ type, label, icon }) => (
-          <DraggableField key={type} type={type} label={label} icon={icon} />
+        {fieldTypes.map(({ widget, label, icon, dataType }) => (
+          <DraggableField
+            key={`${widget}_${dataType}`}
+            widget={widget}
+            title={label}
+            icon={icon}
+            dataType={dataType}
+          />
         ))}
       </CardContent>
     </Card>

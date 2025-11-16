@@ -3,17 +3,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
+import {
+  useFormCraftSchema,
+  useFormCraftSelectedField,
+  useFormCraftStoreActions,
+} from "@/store/FormCraftStoreProvider";
+import { FormField } from "@/types";
 
 import { Plus, X, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export function FieldEditor() {
-  const { schema, selectedField, updateField, selectField } =
-    useFormCraftStoreActions();
+  const { updateField, selectField } = useFormCraftStoreActions();
+  const schema = useFormCraftSchema();
+  // const { "ui:order": uiOrder } = useFormCraftUiSchema();
+
+  const selectedField = useFormCraftSelectedField();
   const [newOption, setNewOption] = useState("");
 
-  const field = schema.fields.find((f) => f.id === selectedField);
+  const field: FormField | undefined = useMemo(
+    () => (selectedField ? schema.properties[selectedField] : undefined),
+    [schema.properties, selectedField]
+  );
+  const properties = useMemo(
+    () => Object.values(schema.properties),
+    [schema.properties, selectedField]
+  );
 
   if (!field) {
     return (
@@ -32,22 +47,23 @@ export function FieldEditor() {
 
   const addOption = () => {
     if (newOption.trim()) {
-      const currentOptions = field.options || [];
-      updateField(field.id, {
-        options: [...currentOptions, newOption.trim()],
+      const currentOptions = field.enum || [];
+      updateField(field.$id, {
+        enum: [...currentOptions, newOption.trim()],
       });
       setNewOption("");
     }
   };
 
   const removeOption = (index: number) => {
-    const currentOptions = field.options || [];
-    updateField(field.id, {
-      options: currentOptions.filter((_, i) => i !== index),
+    const currentOptions = field.enum || [];
+    updateField(field.$id, {
+      enum: currentOptions.filter((_, i) => i !== index),
     });
   };
 
-  const needsOptions = field.type === "select" || field.type === "radio";
+  const needsOptions =
+    field.ui_widget === "select" || field.ui_widget === "radio";
 
   return (
     <Card>
@@ -69,19 +85,19 @@ export function FieldEditor() {
           <Label htmlFor="field-label">Label</Label>
           <Input
             id="field-label"
-            value={field.label}
-            onChange={(e) => updateField(field.id, { label: e.target.value })}
+            value={field.title}
+            onChange={(e) => updateField(field.$id, { title: e.target.value })}
           />
         </div>
 
-        {field.type !== "checkbox" && (
+        {field.ui_widget !== "checkbox" && (
           <div>
             <Label htmlFor="field-placeholder">Placeholder</Label>
             <Input
               id="field-placeholder"
-              value={field.placeholder || ""}
+              value={field.ui_placeholder || ""}
               onChange={(e) =>
-                updateField(field.id, { placeholder: e.target.value })
+                updateField(field.$id, { ui_placeholder: e.target.value })
               }
             />
           </div>
@@ -90,9 +106,9 @@ export function FieldEditor() {
         <div className="flex items-center space-x-2">
           <Switch
             id="field-required"
-            checked={field.required || false}
+            checked={field.ext_required || false}
             onCheckedChange={(checked) =>
-              updateField(field.id, { required: checked })
+              updateField(field.$id, { ext_required: checked })
             }
           />
           <Label htmlFor="field-required">Required</Label>
@@ -102,14 +118,14 @@ export function FieldEditor() {
           <div>
             <Label>Options</Label>
             <div className="space-y-2 mt-2">
-              {field.options?.map((option, index) => (
+              {field.enum?.map((option, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <Input
                     value={option}
                     onChange={(e) => {
-                      const newOptions = [...(field.options || [])];
+                      const newOptions = [...(field.enum || [])];
                       newOptions[index] = e.target.value;
-                      updateField(field.id, { options: newOptions });
+                      updateField(field.$id, { enum: newOptions });
                     }}
                   />
                   <Button
@@ -142,10 +158,10 @@ export function FieldEditor() {
           </div>
         )}
 
-        {(field.type === "text" ||
-          field.type === "number" ||
-          field.type === "password" ||
-          field.type === "textarea") && (
+        {(field.ui_widget === "text" ||
+          field.ui_widget === "updown" ||
+          field.ui_widget === "password" ||
+          field.ui_widget === "textarea") && (
           <div className="space-y-3">
             <Label>Validation Rules</Label>
 
@@ -158,15 +174,12 @@ export function FieldEditor() {
                   id="min-length"
                   type="number"
                   placeholder="Min"
-                  value={field.validation?.min || ""}
+                  value={field.minLength || ""}
                   onChange={(e) =>
-                    updateField(field.id, {
-                      validation: {
-                        ...field.validation,
-                        min: e.target.value
-                          ? parseInt(e.target.value)
-                          : undefined,
-                      },
+                    updateField(field.$id, {
+                      minLength: e.target.value
+                        ? parseInt(e.target.value)
+                        : undefined,
                     })
                   }
                 />
@@ -179,15 +192,12 @@ export function FieldEditor() {
                   id="max-length"
                   type="number"
                   placeholder="Max"
-                  value={field.validation?.max || ""}
+                  value={field.maxLength || ""}
                   onChange={(e) =>
-                    updateField(field.id, {
-                      validation: {
-                        ...field.validation,
-                        max: e.target.value
-                          ? parseInt(e.target.value)
-                          : undefined,
-                      },
+                    updateField(field.$id, {
+                      maxLength: e.target.value
+                        ? parseInt(e.target.value)
+                        : undefined,
                     })
                   }
                 />
@@ -201,13 +211,10 @@ export function FieldEditor() {
               <Input
                 id="pattern"
                 placeholder="e.g., ^[A-Za-z]+$"
-                value={field.validation?.pattern || ""}
+                value={field.pattern || ""}
                 onChange={(e) =>
-                  updateField(field.id, {
-                    validation: {
-                      ...field.validation,
-                      pattern: e.target.value || undefined,
-                    },
+                  updateField(field.$id, {
+                    pattern: e.target.value || undefined,
                   })
                 }
               />
@@ -220,13 +227,10 @@ export function FieldEditor() {
               <Input
                 id="custom-message"
                 placeholder="Custom validation message"
-                value={field.validation?.message || ""}
+                value={field.message || ""}
                 onChange={(e) =>
-                  updateField(field.id, {
-                    validation: {
-                      ...field.validation,
-                      message: e.target.value || undefined,
-                    },
+                  updateField(field.$id, {
+                    message: e.target.value || undefined,
                   })
                 }
               />
@@ -234,7 +238,7 @@ export function FieldEditor() {
           </div>
         )}
 
-        {field.type === "email" && (
+        {field.ui_widget === "email" && (
           <div>
             <Label htmlFor="email-message" className="text-xs">
               Custom Email Error Message
@@ -242,13 +246,10 @@ export function FieldEditor() {
             <Input
               id="email-message"
               placeholder="Please enter a valid email"
-              value={field.validation?.message || ""}
+              value={field.message || ""}
               onChange={(e) =>
-                updateField(field.id, {
-                  validation: {
-                    ...field.validation,
-                    message: e.target.value || undefined,
-                  },
+                updateField(field.$id, {
+                  message: e.target.value || undefined,
                 })
               }
             />
@@ -267,7 +268,7 @@ export function FieldEditor() {
                 className="w-full px-3 py-2 border rounded-md text-sm"
                 value={field.conditional?.dependsOn || ""}
                 onChange={(e) =>
-                  updateField(field.id, {
+                  updateField(field.$id, {
                     conditional: e.target.value
                       ? {
                           dependsOn: e.target.value,
@@ -281,13 +282,18 @@ export function FieldEditor() {
                 <option value="" className="bg-background">
                   No dependency
                 </option>
-                {schema.fields
-                  .filter((f) => f.id !== field.id)
-                  .map((f) => (
-                    <option key={f.id} value={f.id} className="bg-background">
-                      {f.label}
-                    </option>
-                  ))}
+                {properties.map(
+                  (f) =>
+                    f.$id !== field.$id && (
+                      <option
+                        key={f.$id}
+                        value={f.$id}
+                        className="bg-background"
+                      >
+                        {f.title}
+                      </option>
+                    )
+                )}
               </select>
             </div>
 
@@ -302,7 +308,7 @@ export function FieldEditor() {
                     className="w-full px-3 py-2 border rounded-md text-sm"
                     value={field.conditional.condition}
                     onChange={(e) =>
-                      updateField(field.id, {
+                      updateField(field.$id, {
                         conditional: {
                           dependsOn: field.conditional!.dependsOn,
                           condition: e.target.value as any,
@@ -311,16 +317,39 @@ export function FieldEditor() {
                       })
                     }
                   >
-                    <option value="equals" className="bg-background">
+                    <option
+                      key={"equals"}
+                      value="equals"
+                      className="bg-background"
+                    >
                       Equals
                     </option>
-                    <option value="not_equals" className="bg-background">
+                    <option
+                      key={"not_equals"}
+                      value="not_equals"
+                      className="bg-background"
+                    >
                       Not equals
                     </option>
-                    <option value="contains" className="bg-background">
+                    <option
+                      key={"not_empty_equals"}
+                      value="not_empty_equals"
+                      className="bg-background"
+                    >
+                      Not empty not equals
+                    </option>
+                    <option
+                      key={"contains"}
+                      value="contains"
+                      className="bg-background"
+                    >
                       Contains
                     </option>
-                    <option value="not_empty" className="bg-background">
+                    <option
+                      key={"not_empty"}
+                      value="not_empty"
+                      className="bg-background"
+                    >
                       Is not empty
                     </option>
                   </select>
@@ -336,7 +365,7 @@ export function FieldEditor() {
                       placeholder="Condition value"
                       value={field.conditional.value || ""}
                       onChange={(e) =>
-                        updateField(field.id, {
+                        updateField(field.$id, {
                           conditional: {
                             dependsOn: field.conditional!.dependsOn,
                             condition: field.conditional!.condition,

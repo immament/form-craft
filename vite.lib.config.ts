@@ -37,6 +37,10 @@ const app = async (): Promise<UserConfigExport> => {
           "@dnd-kit/sortable",
           "@dnd-kit/modifiers",
           "@dnd-kit/utilities",
+          "@rjsf/core",
+          "@rjsf/shadcn",
+          "@rjsf/utils",
+          "@rjsf/validator-ajv8",
         ],
 
         output: {

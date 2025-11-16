@@ -6,7 +6,7 @@ import {
   useFormCraftSelectedField,
   useFormCraftStoreActions,
 } from "@/store/FormCraftStoreProvider";
-import { FormField } from "@/types";
+import { DragItem, FormField } from "@/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Settings, Trash2 } from "lucide-react";
@@ -28,19 +28,25 @@ export function SortableField({ field, isClone }: SortableFieldProps) {
     transition,
     isDragging,
   } = useSortable({
-    id: field.id,
-    data: { type: "sorting", fieldType: field.type, label: field.label },
+    id: field.$id,
+    data: {
+      id: field.$id,
+      type: "sorting",
+      dataType: field.type,
+      // ui_widget: field.ui_widget,
+      title: field.title,
+    } as DragItem,
   });
 
   const style = useMemo(
     () => ({ transform: CSS.Transform.toString(transform), transition }),
     [transform, transition]
   );
-  const isSelected = selectedField === field.id;
+  const isSelected = selectedField === field.$id;
 
   const handleRemoveField: MouseEventHandler<HTMLButtonElement> = (ev) => {
     ev.stopPropagation();
-    confirm("Tem a certeza?") && removeField(field.id);
+    confirm("Tem a certeza?") && removeField(field.$id);
   };
 
   return (
@@ -51,12 +57,13 @@ export function SortableField({ field, isClone }: SortableFieldProps) {
         isSelected ? "ring-2 ring-primary" : ""
       } transition-all`}
       onClick={() => {
-        selectField(field.id);
+        selectField(field.$id);
       }}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center space-x-2">
+            {isDragging && "isDragging"}
             <button
               {...attributes}
               {...listeners}
@@ -66,8 +73,10 @@ export function SortableField({ field, isClone }: SortableFieldProps) {
             </button>
             <div>
               <Label className="text-sm font-medium">
-                {field.label}
-                {field.required && <span className="text-red-500 ml-1">*</span>}
+                {field.title}
+                {field.ext_required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
                 {field.conditional && (
                   <span className="text-xs text-blue-500 ml-2">
                     (Conditional)
@@ -98,9 +107,9 @@ export function SortableField({ field, isClone }: SortableFieldProps) {
           )}
         </div>
         <div className="mt-2">
-          {field.type !== "checkbox" && (
+          {field.ui_widget !== "checkbox" && (
             <Label className="text-sm font-medium mb-1 block">
-              {field.label}
+              {field.title}
             </Label>
           )}
           <RenderFieldPreview field={field} />
@@ -115,22 +124,22 @@ function RenderFieldPreview({
 }: {
   field: FormField;
 }): JSX.Element | null {
-  switch (field.type) {
+  switch (field.ui_widget) {
     case "text":
     case "email":
     case "password":
-    case "number":
+    case "updown":
     case "tel":
-    case "url":
+    case "uri":
     case "date":
     case "time":
-    case "datetimeLocal":
-    case "file":
+    case "date-time":
+    case "data-url":
       return (
         <Input
-          type={field.type}
+          type={field.ui_widget}
           placeholder={
-            field.placeholder || `Enter ${field.label.toLowerCase()}`
+            field.ui_placeholder || `Enter ${field.title.toLowerCase()}`
           }
           disabled
         />
@@ -140,7 +149,7 @@ function RenderFieldPreview({
         <textarea
           className="w-full px-3 py-2 border rounded-md resize-none"
           placeholder={
-            field.placeholder || `Enter ${field.label.toLowerCase()}`
+            field.ui_placeholder || `Enter ${field.title.toLowerCase()}`
           }
           rows={2}
           disabled
@@ -161,15 +170,15 @@ function RenderFieldPreview({
       return (
         <div className="flex items-center space-x-2">
           <input type="checkbox" disabled className="rounded" />
-          <span className="text-sm">{field.label}</span>
+          <span className="text-sm">{field.title}</span>
         </div>
       );
     case "radio":
       return (
         <div className="space-y-2">
-          {field.options?.map((option, index) => (
+          {field.enum?.map((option, index) => (
             <div key={index} className="flex items-center space-x-2">
-              <input type="radio" name={field.id} disabled />
+              <input type="radio" name={field.$id} disabled />
               <span className="text-sm">{option}</span>
             </div>
           ))}

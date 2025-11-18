@@ -44,16 +44,18 @@ export type FormFieldUpdate = Partial<FormField>;
 export type AppUiSchemaField = {
   ["ui:placeholder"]?: string;
   ["ui:widget"]?: string;
-  conditional?: {
-    dependsOn: string;
-    condition:
-      | "equals"
-      | "not_equals"
-      | "contains"
-      | "not_empty"
-      | "not_empty_equals";
-    value: string;
-  };
+  conditional?: ConditionalRule;
+};
+
+export type ConditionalRule = {
+  dependsOn: string;
+  condition:
+    | "equals"
+    | "not_equals"
+    | "contains"
+    | "not_empty"
+    | "not_empty_equals";
+  value: string;
 };
 
 export type AppUiSchema = {
@@ -143,3 +145,10 @@ export interface DragItem {
   // ui_widget: string; //FormField["ui_widget"];
   // title: string;
 }
+
+export type DraggedField = {
+  dragType: "sorting" | "field";
+  icon: React.ReactNode;
+  field: FormField;
+  uiField: AppUiSchemaField;
+};

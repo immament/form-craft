@@ -17,12 +17,12 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { useState } from "react";
-import { useFormCraftStoreActions } from "./store/FormCraftStoreProvider";
+import { FormCraft } from "./store/FormCraftStore.provider";
 
 type DraggedField = { field: FormField; uiField: AppUiSchemaField } | null;
 
 function App() {
-  const { reorderFields } = useFormCraftStoreActions();
+  const { reorderFields } = FormCraft.useActions();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [draggedField, setDraggedField] = useState<DraggedField | null>(null);
 
@@ -86,7 +86,7 @@ function App() {
 
     // Handle reordering within canvas
     if (active.id !== over.id && !active.data.current?.type) {
-      reorderFields(active.id as string, over.id as string);
+      // reorderFields(active.id as string, over.id as string);
     }
 
     setActiveId(null);

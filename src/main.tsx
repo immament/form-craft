@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./globals.css";
-import { FormCraftStoreProvider } from "./store/FormCraftStoreProvider";
+import { FormCraftStoreProvider } from "./store/FormCraftStore.provider";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

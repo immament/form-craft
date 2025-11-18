@@ -1,7 +1,4 @@
-import {
-  useFormCraftSchema,
-  useFormCraftStoreActions,
-} from "@/store/FormCraftStoreProvider";
+import { FormCraft } from "@/store/FormCraftStore.provider";
 import ReactJsonView from "@microlink/react-json-view";
 import { UiSchema } from "@rjsf/utils";
 import { customizeValidator } from "@rjsf/validator-ajv8";
@@ -36,8 +33,8 @@ export function JsonFormPreviewCard() {
 }
 
 export function JsonFormPreview() {
-  const schema = useFormCraftSchema();
-  const { exportJsonSchema } = useFormCraftStoreActions();
+  const schema = FormCraft.useSchema();
+  const { exportJsonSchema } = FormCraft.useActions();
 
   const { jsonSchema, uiSchema, jsonSchemaFiltered } = useMemo(() => {
     const { jsonSchema, uiSchema } = exportJsonSchema();

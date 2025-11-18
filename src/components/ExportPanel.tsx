@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
+import { FormCraft } from "@/store/FormCraftStore.provider";
 import { Code, Download, FileJson } from "lucide-react";
 import { useState } from "react";
 
 export function ExportPanel() {
   const { exportSchema, exportReactComponent, regenerateFieldIds } =
-    useFormCraftStoreActions();
+    FormCraft.useActions();
   const [exportType, setExportType] = useState<"schema" | "component">(
     "schema"
   );

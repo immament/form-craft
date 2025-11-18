@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateId } from "@/lib/my-utils";
-import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
+import { FormCraft } from "@/store/FormCraftStore.provider";
 import { FormField, FormSchema } from "@/types";
 import { FileText, MessageSquare, ShoppingCart, User } from "lucide-react";
 
@@ -249,7 +249,7 @@ function toProperties(
 }
 
 export function FormTemplates() {
-  const { loadTemplate } = useFormCraftStoreActions();
+  const { loadTemplate } = FormCraft.useActions();
 
   return (
     <Card>

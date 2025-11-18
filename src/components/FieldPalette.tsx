@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useFormCraftStoreActions } from "@/store/FormCraftStoreProvider";
-import { AppUiSchemaField, DragItem, FormField } from "@/types";
+import { AppUiSchemaField, DraggedField, FormField } from "@/types";
 import { useDraggable } from "@dnd-kit/core";
 import {
   CheckSquare,
@@ -12,6 +11,7 @@ import {
   PlusIcon,
   Type,
 } from "lucide-react";
+import { useCallback, useMemo } from "react";
 import { Button } from "./ui/button";
 
 const fieldTypes: Array<{
@@ -71,6 +71,7 @@ const fieldTypes: Array<{
 ];
 
 export function FieldPalette() {
+  console.log("FieldPalette ++");
   return (
     <Card>
       <CardHeader>
@@ -78,7 +79,7 @@ export function FieldPalette() {
       </CardHeader>
       <CardContent className="space-y-2">
         {fieldTypes.map(({ widget, label, icon, type }) => (
-          <DraggableField
+          <PalleteField
             key={`${widget}_${type}`}
             widget={widget}
             title={label}
@@ -91,7 +92,7 @@ export function FieldPalette() {
   );
 }
 
-function DraggableField({
+function PalleteField({
   widget,
   title,
   icon,
@@ -102,18 +103,38 @@ function DraggableField({
   icon: React.ReactNode;
   type: FormField["type"] | undefined;
 }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `palette-${widget}`,
-    data: {
+  console.log("DraggableField ++", widget);
+  const dragProps = useMemo(() => {
+    return {
       id: `palette-${widget}`,
-      dragType: "field",
-      widget,
-      type: type ?? "string",
-      title,
-    } as DragItem,
-  });
+      data: {
+        // icon,
+        // dragType: "field",
+        // field: { $id: `palette-${widget}`, title, type: type ?? "string" },
+        // uiField: widget,
+      } as DraggedField,
+    };
+  }, [widget, title, icon, type]);
+  if (widget !== "textarea") return <div>{widget}</div>;
+  const { attributes, listeners, setNodeRef } = useDraggable(dragProps);
+  // const { addField } = FormCraft.useActions();
 
-  const { addField } = useFormCraftStoreActions();
+  const handleAdd = useCallback(
+    (e: { preventDefault: () => void }) => {
+      e.preventDefault();
+      // addField(
+      //   {
+      //     type: type ?? "string",
+      //     title: `New ${widget} field x`,
+      //     ...(widget === "select" || widget === "radio"
+      //       ? { enum: ["Option 1", "Option 2"] }
+      //       : {}),
+      //   },
+      //   { ["ui:widget"]: widget }
+      // );
+    },
+    [widget, type]
+  );
 
   return (
     <div className="flex items-center">
@@ -122,7 +143,7 @@ function DraggableField({
         {...listeners}
         {...attributes}
         className={`p-3 border rounded-lg cursor-grab hover:bg-accent transition-colors touch-none w-full ${
-          isDragging ? "opacity-20" : ""
+          false ? "opacity-20" : ""
         }`}
       >
         <div className="flex items-center space-x-2">
@@ -130,24 +151,7 @@ function DraggableField({
           <span className="text-sm font-medium">{title}</span>
         </div>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        title="Add Field"
-        onClick={(e) => {
-          e.preventDefault();
-          addField(
-            {
-              type: type ?? "string",
-              title: `New ${widget} field x`,
-              ...(widget === "select" || widget === "radio"
-                ? { enum: ["Option 1", "Option 2"] }
-                : {}),
-            },
-            { ["ui:widget"]: widget }
-          );
-        }}
-      >
+      <Button variant="ghost" size="icon" title="Add Field" onClick={handleAdd}>
         <PlusIcon className="w-4 h-4" />
       </Button>
     </div>

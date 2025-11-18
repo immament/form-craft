@@ -3,45 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { FormCraft } from "@/store/FormCraftStore.provider";
 import {
-  useFormCraftSchema,
-  useFormCraftSelectedField,
-  useFormCraftStoreActions,
-  useFormCraftUiSchema,
-} from "@/store/FormCraftStoreProvider";
-import { AppUiSchemaField, FormField, FormFieldUpdate } from "@/types";
-
+  AppUiSchemaField,
+  ConditionalRule,
+  FormField,
+  FormFieldUpdate,
+} from "@/types";
 import { Plus, X, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export function FieldEditor() {
   const { updateField, selectField, updateRequiredField, updateFieldUi } =
-    useFormCraftStoreActions();
-  const { properties: schemaProperties, required } = useFormCraftSchema();
-
-  const uiSchema2 = useFormCraftUiSchema();
-  // const { "ui:order": uiOrder } = useFormCraftUiSchema();
-
-  const selectedField = useFormCraftSelectedField();
-  const [newOption, setNewOption] = useState("");
-
-  const field: FormField | undefined = useMemo(
-    () => (selectedField ? schemaProperties[selectedField] : undefined),
-    [schemaProperties, selectedField]
-  );
-  const uiField: AppUiSchemaField | undefined = useMemo(
-    () => (selectedField ? uiSchema2[selectedField] ?? {} : undefined),
-    [uiSchema2, selectedField]
-  );
-
-  const properties = useMemo(
-    () => Object.values(schemaProperties),
-    [schemaProperties]
-  );
-
-  const isRequired = useMemo(() => {
-    return selectedField ? required.includes("selectedField") : false;
-  }, [required, selectedField]);
+    FormCraft.useActions();
+  const fieldId = FormCraft.useSelectedFieldId();
+  const field = FormCraft.useSchemaField(fieldId);
+  const uiField = FormCraft.useUiSchemaField(fieldId);
+  const isRequired = FormCraft.useIsFieldRequired(fieldId);
 
   if (!field || !uiField) {
     return (
@@ -57,18 +35,6 @@ export function FieldEditor() {
       </Card>
     );
   }
-
-  console.log("FieldEditor", field, uiField);
-
-  const addOption = () => {
-    if (newOption.trim()) {
-      const currentOptions = field.enum || [];
-      updateField(field.$id, {
-        enum: [...currentOptions, newOption.trim()],
-      });
-      setNewOption("");
-    }
-  };
 
   const removeOption = (index: number) => {
     const currentOptions = field.enum || [];
@@ -88,7 +54,7 @@ export function FieldEditor() {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => selectField(null)}
+            onClick={() => selectField(undefined)}
           >
             <XIcon className="h-6 w-6" />
             <span className="sr-only">Close</span>
@@ -130,47 +96,11 @@ export function FieldEditor() {
         </div>
 
         {needsOptions && (
-          <div>
-            <Label>Options</Label>
-            <div className="space-y-2 mt-2">
-              {field.enum?.map((option, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <Input
-                    value={option}
-                    onChange={(e) => {
-                      const newOptions = [...(field.enum || [])];
-                      newOptions[index] = e.target.value;
-                      updateField(field.$id, { enum: newOptions });
-                    }}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeOption(index)}
-                    className="h-8 w-8"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-              <div className="flex items-center space-x-2">
-                <Input
-                  placeholder="Add option"
-                  value={newOption}
-                  onChange={(e) => setNewOption(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && addOption()}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={addOption}
-                  className="h-8 w-8"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          <RenderOptions
+            field={field}
+            updateField={updateField}
+            removeOption={removeOption}
+          />
         )}
 
         {(uiField["ui:widget"] === "text" ||
@@ -198,132 +128,214 @@ export function FieldEditor() {
           </div>
         )}
 
-        <div className="space-y-3">
-          <Label>Conditional Logic</Label>
-          <div className="space-y-2">
-            <div>
-              <Label htmlFor="depends-on" className="text-xs">
-                Show when field
-              </Label>
-              <select
-                id="depends-on"
-                className="w-full px-3 py-2 border rounded-md text-sm"
-                value={uiField.conditional?.dependsOn || ""}
-                onChange={(e) =>
-                  updateFieldUi(field.$id, {
-                    conditional: e.target.value
-                      ? {
-                          dependsOn: e.target.value,
-                          condition: "equals",
-                          value: "",
-                        }
-                      : undefined,
-                  })
-                }
-              >
-                <option value="" className="bg-background">
-                  No dependency
-                </option>
-                {properties.map(
-                  (f) =>
-                    f.$id !== field.$id && (
-                      <option
-                        key={f.$id}
-                        value={f.$id}
-                        className="bg-background"
-                      >
-                        {f.title}
-                      </option>
-                    )
-                )}
-              </select>
-            </div>
-
-            {uiField.conditional?.dependsOn && (
-              <>
-                <div>
-                  <Label htmlFor="condition" className="text-xs">
-                    Condition
-                  </Label>
-                  <select
-                    id="condition"
-                    className="w-full px-3 py-2 border rounded-md text-sm"
-                    value={uiField.conditional.condition}
-                    onChange={(e) =>
-                      updateFieldUi(field.$id, {
-                        conditional: {
-                          dependsOn: uiField.conditional!.dependsOn,
-                          condition: e.target.value as any,
-                          value: uiField.conditional!.value || "",
-                        },
-                      })
-                    }
-                  >
-                    <option
-                      key={"equals"}
-                      value="equals"
-                      className="bg-background"
-                    >
-                      Equals
-                    </option>
-                    <option
-                      key={"not_equals"}
-                      value="not_equals"
-                      className="bg-background"
-                    >
-                      Not equals
-                    </option>
-                    <option
-                      key={"not_empty_equals"}
-                      value="not_empty_equals"
-                      className="bg-background"
-                    >
-                      Not empty not equals
-                    </option>
-                    <option
-                      key={"contains"}
-                      value="contains"
-                      className="bg-background"
-                    >
-                      Contains
-                    </option>
-                    <option
-                      key={"not_empty"}
-                      value="not_empty"
-                      className="bg-background"
-                    >
-                      Is not empty
-                    </option>
-                  </select>
-                </div>
-
-                {uiField.conditional.condition !== "not_empty" && (
-                  <div>
-                    <Label htmlFor="condition-value" className="text-xs">
-                      Value
-                    </Label>
-                    <Input
-                      id="condition-value"
-                      placeholder="Condition value"
-                      value={uiField.conditional.value || ""}
-                      onChange={(e) =>
-                        updateFieldUi(field.$id, {
-                          conditional: {
-                            dependsOn: uiField.conditional!.dependsOn,
-                            condition: uiField.conditional!.condition,
-                            value: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+        <ConditionalLogic
+          conditional={uiField.conditional}
+          updateFieldUi={updateFieldUi}
+          field={field}
+        />
       </CardContent>
     </Card>
+  );
+}
+
+function ConditionalLogic({
+  field,
+  conditional,
+  updateFieldUi,
+}: {
+  field: FormField;
+  conditional?: ConditionalRule;
+  updateFieldUi: (id: string, updates: Partial<AppUiSchemaField>) => void;
+}) {
+  const { properties } = FormCraft.useSchema();
+  const propertiesArray = useMemo(
+    () => Object.values(properties).filter((f) => f.$id !== field.$id),
+    [properties]
+  );
+
+  return (
+    <div className="space-y-3">
+      <Label>Conditional Logic</Label>
+      <div className="space-y-2">
+        <div>
+          <Label htmlFor="depends-on" className="text-xs mb-2">
+            Show when field
+          </Label>
+          <select
+            id="depends-on"
+            className="w-full px-3 py-2 border rounded-md text-sm"
+            value={conditional?.dependsOn || ""}
+            onChange={(e) =>
+              updateFieldUi(field.$id, {
+                conditional: e.target.value
+                  ? {
+                      dependsOn: e.target.value,
+                      condition: "equals",
+                      value: "",
+                    }
+                  : undefined,
+              })
+            }
+          >
+            <option value="" className="bg-background">
+              No dependency
+            </option>
+            {propertiesArray.map((f) => (
+              <option key={f.$id} value={f.$id} className="bg-background">
+                {f.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {conditional?.dependsOn && (
+          <>
+            <ConditionalLogicCondition
+              field={field}
+              conditional={conditional}
+              updateFieldUi={updateFieldUi}
+            />
+            {conditional.condition !== "not_empty" && (
+              <div>
+                <Label htmlFor="condition-value" className="text-xs mb-2">
+                  Value
+                </Label>
+                <Input
+                  id="condition-value"
+                  placeholder="Condition value"
+                  value={conditional.value || ""}
+                  onChange={(e) =>
+                    updateFieldUi(field.$id, {
+                      conditional: {
+                        dependsOn: conditional.dependsOn,
+                        condition: conditional.condition,
+                        value: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ConditionalLogicCondition({
+  field,
+  conditional,
+  updateFieldUi,
+}: {
+  field: FormField;
+  conditional: ConditionalRule;
+  updateFieldUi: (id: string, updates: Partial<AppUiSchemaField>) => void;
+}) {
+  return (
+    <div>
+      <Label htmlFor="condition" className="text-xs mb-2">
+        Condition
+      </Label>
+      <select
+        id="condition"
+        className="w-full px-3 py-2 border rounded-md text-sm"
+        value={conditional.condition}
+        onChange={(e) =>
+          updateFieldUi(field.$id, {
+            conditional: {
+              dependsOn: conditional.dependsOn,
+              condition: e.target.value as any,
+              value: conditional.value || "",
+            },
+          })
+        }
+      >
+        <option key={"equals"} value="equals" className="bg-background">
+          Equals
+        </option>
+        <option key={"not_equals"} value="not_equals" className="bg-background">
+          Not equals
+        </option>
+        <option
+          key={"not_empty_equals"}
+          value="not_empty_equals"
+          className="bg-background"
+        >
+          Not empty not equals
+        </option>
+        <option key={"contains"} value="contains" className="bg-background">
+          Contains
+        </option>
+        <option key={"not_empty"} value="not_empty" className="bg-background">
+          Is not empty
+        </option>
+      </select>
+    </div>
+  );
+}
+
+function RenderOptions({
+  field,
+  updateField,
+  removeOption,
+}: {
+  field: FormField;
+  updateField: (id: string, updates: FormFieldUpdate) => void;
+  removeOption: (index: number) => void;
+}) {
+  const [newOption, setNewOption] = useState("");
+  const addOption = () => {
+    if (newOption.trim()) {
+      const currentOptions = field.enum || [];
+      updateField(field.$id, {
+        enum: [...currentOptions, newOption.trim()],
+      });
+      setNewOption("");
+    }
+  };
+  return (
+    <div>
+      <Label>Options</Label>
+      <div className="space-y-2 mt-2">
+        {field.enum?.map((option, index) => (
+          <div key={index} className="flex items-center space-x-2">
+            <Input
+              value={option}
+              onChange={(e) => {
+                const newOptions = [...(field.enum || [])];
+                newOptions[index] = e.target.value;
+                updateField(field.$id, { enum: newOptions });
+              }}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => removeOption(index)}
+              className="h-8 w-8"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        ))}
+        <div className="flex items-center space-x-2">
+          <Input
+            placeholder="Add option"
+            value={newOption}
+            onChange={(e) => setNewOption(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && addOption()}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={addOption}
+            className="h-8 w-8"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 

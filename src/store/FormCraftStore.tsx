@@ -8,11 +8,14 @@ import {
 import { UiSchema } from "@rjsf/utils";
 import { JSONSchema7 } from "json-schema";
 
-export interface FormStore {
+export interface FormCraftStore {
+  // sdata
   schema: FormSchema;
   uiSchema: AppUiSchema;
-  selectedField: string | null;
+  selectedFieldId: string | undefined;
+  // actions
   actions: FormStoreActions;
+  fieldsOrder: string[];
 }
 
 export type FormStoreActions = FormStoreBaseActions;
@@ -21,13 +24,18 @@ export type FormStoreBaseActions = {
   addField: (
     field: FormFieldWithoutId,
     uiField: AppUiSchemaField,
-    beforeItemId?: string
+    inSkeletonPlace?: boolean
   ) => void;
   updateField: (id: string, updates: FormFieldUpdate) => void;
   updateFieldUi: (id: string, updates: Partial<AppUiSchemaField>) => void;
   removeField: (id: string) => void;
-  reorderFields: (activeId: string, overId: string) => void;
-  selectField: (id: string | null) => void;
+
+  reorderFields: (activeIdx: number, toIdx: number) => void;
+  newItemSkelletonAtEnd: () => void;
+  newItemSkelletonAtIdx: (index: number) => void;
+  clearNewItemSkelleton: () => void;
+
+  selectField: (id: string | undefined) => void;
   updateRequiredField: (id: string, isRequired: boolean) => void;
   updateSchema: (updates: Partial<Omit<FormSchema, "fields">>) => void;
   loadTemplate: (template: Omit<FormSchema, "id">) => void;
@@ -40,6 +48,11 @@ export type FormStoreBaseActions = {
   exportSchema: () => FormSchema;
   exportJsonSchema: () => { jsonSchema: JSONSchema7; uiSchema: UiSchema };
   exportReactComponent: () => string;
+
+  newFieldName: (
+    field: FormFieldWithoutId,
+    widget: string | undefined
+  ) => string;
 };
 
 // export type FormStoreMultiStepActions = {

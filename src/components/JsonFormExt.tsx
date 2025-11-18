@@ -25,7 +25,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
 
   const conditionalFields = useMemo(() => {
     const result = props.uiSchema && pickConditionalFields(props.uiSchema);
-    console.log("conditionalFields = useMemo:", result, props.uiSchema);
+    // console.log("conditionalFields = useMemo:", result, props.uiSchema);
     return result;
   }, [props.uiSchema]);
 

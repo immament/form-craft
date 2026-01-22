@@ -85,6 +85,7 @@ export function createFormCraftActions(
 
     reorderFields: (activeIdx, toIdx) =>
       set((state) => {
+        console.log("reorderFields, activeIdx:", activeIdx, "to:", toIdx);
         const uiOrder = state.uiSchema["ui:order"];
         if (activeIdx >= 0 && toIdx >= 0) {
           arrayMove(uiOrder, activeIdx, toIdx);
@@ -94,20 +95,34 @@ export function createFormCraftActions(
 
     newItemSkelletonAtEnd: () => {
       set((state) => {
-        state.fieldsOrder = [
-          ...state.uiSchema["ui:order"],
-          NEW_FIELD_SKELETON_ID,
-        ];
+        console.log(
+          "newItemSkelletonAtEnd",
+          state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID)
+        );
+        if (state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID) === -1) {
+          state.fieldsOrder = [
+            ...state.uiSchema["ui:order"],
+            NEW_FIELD_SKELETON_ID,
+          ];
+        }
       });
     },
     newItemSkelletonAtIdx: (index) => {
       set((state) => {
-        const result = [...state.uiSchema["ui:order"]];
-        result.splice(index, 0, NEW_FIELD_SKELETON_ID);
-        state.fieldsOrder = result;
+        console.log(
+          "newItemSkelletonAtIdx, activeIdx:",
+          index,
+          state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID)
+        );
+        if (state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID) !== index) {
+          const result = [...state.uiSchema["ui:order"]];
+          result.splice(index, 0, NEW_FIELD_SKELETON_ID);
+          state.fieldsOrder = result;
+        }
       });
     },
     clearNewItemSkelleton: () => {
+      console.log("clearNewItemSkelleton");
       set((state) => {
         state.fieldsOrder = state.uiSchema["ui:order"];
       });

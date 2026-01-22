@@ -32,22 +32,23 @@ export function FormCanvas() {
   );
 }
 function FormCanvasHeader() {
+  console.log("FormCanvasHeader++");
   const { updateSchema } = FormCraft.useActions();
-  const schema = FormCraft.useSchema();
+  const { title, description } = FormCraft.useSchema();
 
   return (
     <div className="space-y-2">
       <Label htmlFor="form-title">Título do formulário</Label>
       <Input
         id="form-title"
-        value={schema.title}
+        value={title}
         onChange={(e) => updateSchema({ title: e.target.value })}
         className="text-xl font-semibold"
       />
       <Label htmlFor="form-description">Descrição (opcional)</Label>
       <Input
         id="form-description"
-        value={schema.description || ""}
+        value={description || ""}
         onChange={(e) => updateSchema({ description: e.target.value })}
         placeholder="Adicione uma descrição ao seu formulário"
       />
@@ -59,7 +60,7 @@ function FormCanvasContent() {
   const fieldsOrder = FormCraft.useFieldsOrder();
   const { setNodeRef, over, active } = useDroppable({ id: "form-canvas" });
 
-  // console.log("order:", order);
+  // console.log("FormCanvasContent++", "fieldsOrder:", fieldsOrder);
   return (
     <div
       ref={setNodeRef}

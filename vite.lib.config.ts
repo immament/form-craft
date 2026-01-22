@@ -19,7 +19,7 @@ const app = async (): Promise<UserConfigExport> => {
     resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
     build: {
       emptyOutDir: false,
-      // minify: false,
+      minify: false,
       lib: {
         entry: path.resolve(__dirname, "src/index.ts"),
         name: formattedName,

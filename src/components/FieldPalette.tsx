@@ -1,4 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { FormCraft } from "@/store/FormCraftStore.provider";
 import { AppUiSchemaField, DraggedField, FormField } from "@/types";
 import { useDraggable } from "@dnd-kit/core";
 import {
@@ -103,57 +105,67 @@ function PalleteField({
   icon: React.ReactNode;
   type: FormField["type"] | undefined;
 }) {
-  console.log("DraggableField ++", widget);
+  // console.log("PalleteField++", widget);
   const dragProps = useMemo(() => {
     return {
       id: `palette-${widget}`,
       data: {
-        // icon,
-        // dragType: "field",
-        // field: { $id: `palette-${widget}`, title, type: type ?? "string" },
-        // uiField: widget,
+        icon,
+        dragType: "field",
+        field: { $id: `palette-${widget}`, title, type: type ?? "string" },
+        uiField: widget,
       } as DraggedField,
     };
   }, [widget, title, icon, type]);
-  if (widget !== "textarea") return <div>{widget}</div>;
-  const { attributes, listeners, setNodeRef } = useDraggable(dragProps);
-  // const { addField } = FormCraft.useActions();
+
+  const { attributes, listeners, setNodeRef, isDragging } =
+    useDraggable(dragProps);
+  const { addField } = FormCraft.useActions();
 
   const handleAdd = useCallback(
     (e: { preventDefault: () => void }) => {
       e.preventDefault();
-      // addField(
-      //   {
-      //     type: type ?? "string",
-      //     title: `New ${widget} field x`,
-      //     ...(widget === "select" || widget === "radio"
-      //       ? { enum: ["Option 1", "Option 2"] }
-      //       : {}),
-      //   },
-      //   { ["ui:widget"]: widget }
-      // );
+      addField(
+        {
+          type: type ?? "string",
+          title: `New ${widget} field x`,
+          ...(widget === "select" || widget === "radio"
+            ? { enum: ["Option 1", "Option 2"] }
+            : {}),
+        },
+        { ["ui:widget"]: widget }
+      );
     },
-    [widget, type]
+    [widget, type, addField]
   );
 
-  return (
-    <div className="flex items-center">
-      <div
-        ref={setNodeRef}
-        {...listeners}
-        {...attributes}
-        className={`p-3 border rounded-lg cursor-grab hover:bg-accent transition-colors touch-none w-full ${
-          false ? "opacity-20" : ""
-        }`}
-      >
-        <div className="flex items-center space-x-2">
-          {icon}
-          <span className="text-sm font-medium">{title}</span>
+  return useMemo(
+    () => (
+      <div className="flex items-center">
+        <div
+          ref={setNodeRef}
+          {...listeners}
+          {...attributes}
+          className={cn(
+            `p-3 border rounded-lg cursor-grab hover:bg-accent transition-colors touch-none w-full`,
+            isDragging && "opacity-20"
+          )}
+        >
+          <div className="flex items-center space-x-2">
+            {icon}
+            <span className="text-sm font-medium">{title}</span>
+          </div>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Add Field"
+          onClick={handleAdd}
+        >
+          <PlusIcon className="w-4 h-4" />
+        </Button>
       </div>
-      <Button variant="ghost" size="icon" title="Add Field" onClick={handleAdd}>
-        <PlusIcon className="w-4 h-4" />
-      </Button>
-    </div>
+    ),
+    [attributes, listeners, setNodeRef, isDragging, title, handleAdd]
   );
 }

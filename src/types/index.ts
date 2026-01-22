@@ -43,7 +43,7 @@ export type FormFieldUpdate = Partial<FormField>;
 
 export type AppUiSchemaField = {
   ["ui:placeholder"]?: string;
-  ["ui:widget"]?: string;
+  ["ui:widget"]?: "select" | string;
   conditional?: ConditionalRule;
 };
 
@@ -132,23 +132,23 @@ export type AppUiSchema = {
 
 export type FormFieldWithoutId = Omit<FormField, "$id">;
 
-export interface DragItem {
-  dragType: "sorting" | "field";
-  id: string;
-  title: string;
-  icon: React.ReactNode;
-  type?: FormField["type"]; // default" string"
-  widget: AppUiSchemaField["ui:widget"];
-  // id: string;
-  // type: "sorting" | "field";
-  // dataType: FormField["type"];
-  // ui_widget: string; //FormField["ui_widget"];
-  // title: string;
-}
+// export interface DragItem {
+//   dragType: "sorting" | "field";
+//   id: string;
+//   title: string;
+//   icon: React.ReactNode;
+//   type?: FormField["type"]; // default" string"
+//   widget: AppUiSchemaField["ui:widget"];
+//   // id: string;
+//   // type: "sorting" | "field";
+//   // dataType: FormField["type"];
+//   // ui_widget: string; //FormField["ui_widget"];
+//   // title: string;
+// }
 
 export type DraggedField = {
   dragType: "sorting" | "field";
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   field: FormField;
   uiField: AppUiSchemaField;
 };

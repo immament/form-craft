@@ -1,5 +1,5 @@
 import { FormCraft } from "@/store/FormCraftStore.provider";
-import { AppUiSchemaField, DragItem, FormField } from "@/types";
+import { AppUiSchemaField, DraggedField, FormField } from "@/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useMemo } from "react";
@@ -42,10 +42,42 @@ export function SortableField({
   isRequired,
   isClone,
 }: SortableFieldProps) {
-  console.log("Sortable Field ++", isClone, field, uiField);
+  // if (isClone) {
+  // console.log("SortableField ++", isClone, field, field?.$id);
+  // }
+  // console.log("SortableField ++", isClone, ",", field.$id, ",", field.title);
+
+  const props = useMemo(() => {
+    console.log(
+      "SortableField props MEMO",
+      isClone,
+      ",",
+      field.$id,
+      ",",
+      field.title
+    );
+    return {
+      id: isClone ? "CLONE" : field.$id,
+      data: {
+        // id: field.$id,
+        // dragType: "sorting",
+        // type: field.type,
+        // widget: uiField["ui:widget"],
+        // title: field.title,
+
+        dragType: "field",
+        field: {
+          $id: field.$id,
+          title: field.title,
+          type: field.type ?? "string",
+        },
+        uiField,
+      } as DraggedField,
+    };
+  }, [field, uiField, isClone, isRequired]);
 
   const { selectField } = FormCraft.useActions();
-  const selectedField = FormCraft.useSelectedFieldId();
+  const selectedFieldId = FormCraft.useSelectedFieldId();
   const {
     attributes,
     isDragging,
@@ -54,16 +86,7 @@ export function SortableField({
     setNodeRef,
     transform,
     transition,
-  } = useSortable({
-    id: field.$id,
-    data: {
-      id: field.$id,
-      dragType: "sorting",
-      type: field.type,
-      widget: uiField["ui:widget"],
-      title: field.title,
-    } as DragItem,
-  });
+  } = useSortable(props);
 
   const style = useMemo(
     () => ({ transform: CSS.Transform.toString(transform), transition }),
@@ -79,7 +102,7 @@ export function SortableField({
       isDragging={isDragging}
       isRequired={isRequired}
       isClone={isClone}
-      isSelected={selectedField === field.$id}
+      isSelected={selectedFieldId === field.$id}
       draggableAttributes={attributes}
       listeners={listeners}
       onClick={() => {

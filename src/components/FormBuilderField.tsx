@@ -30,6 +30,7 @@ export function FormBuilderField({
   listeners,
   ...props
 }: FormBuilderFieldProps & React.ComponentProps<"div">) {
+  //   console.log("FormBuilderField ++", isClone, field?.$id);
   return (
     <Card
       ref={ref}

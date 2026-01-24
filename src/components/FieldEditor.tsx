@@ -10,17 +10,21 @@ import {
   FormField,
   FormFieldUpdate,
 } from "@/types";
+import { getSubLogger } from "@/utils/logger";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, X, XIcon } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { FieldPalatteInfo } from "./FieldPalette";
+import { Field, FieldError, FieldGroup } from "./ui/field";
 import {
   InputGroup,
   InputGroupButton,
   InputGroupInput,
 } from "./ui/input-group";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
-import { Field, FieldError, FieldGroup } from "./ui/field";
+
+const log = getSubLogger({ name: "FormEditor" });
 
 export function FieldEditor() {
   const { updateField, selectField, updateRequiredField, updateFieldUi } =
@@ -29,6 +33,20 @@ export function FieldEditor() {
   const field = FormCraft.useSchemaField(fieldId);
   const uiField = FormCraft.useUiSchemaField(fieldId);
   const isRequired = FormCraft.useIsFieldRequired(fieldId);
+
+  // const fieldTypeLabel = useMemo(() => {
+  //   if (!uiField?.["ui:widget"]) return;
+  //   const fieldType = paletteFieldTypes.find(
+  //     (ft) => ft.widget === uiField["ui:widget"],
+  //   );
+  //   if (!fieldType) return;
+  //   return (
+  //     <div className="flex items-center space-x-2">
+  //       {fieldType.icon}
+  //       <span className="text-sm font-medium">{fieldType.label}</span>
+  //     </div>
+  //   );
+  // }, [uiField?.["ui:widget"]]);
 
   if (!field || !uiField) {
     return (
@@ -71,6 +89,7 @@ export function FieldEditor() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <FieldPalatteInfo widget={uiField["ui:widget"]} />
         <div>
           <Label htmlFor="field-label">Etiqueta</Label>
           <Input
@@ -166,9 +185,12 @@ function UpdateIdField({ fieldId }: { fieldId: string }) {
       fieldId: fieldId,
     },
   });
+  const { updateFieldId } = FormCraft.useActions();
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    console.log(JSON.stringify(data, null, 2));
+    log.info(JSON.stringify(data, null, 2));
+
+    updateFieldId(fieldId, data.fieldId);
   }
 
   return (
@@ -222,7 +244,7 @@ function UpdateIdField({ fieldId }: { fieldId: string }) {
   //         variant="secondary"
   //         onClick={() => {
   //           if (tmpId) {
-  //             console.log(
+  //             log.debug(
   //               "validity:",
   //               inputRef.current?.validity.valid,
   //               inputRef.current?.validationMessage,

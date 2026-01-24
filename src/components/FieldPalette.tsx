@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { FormCraft } from "@/store/FormCraftStore.provider";
 import { AppUiSchemaField, DraggedField, FormField } from "@/types";
+import { logger as log } from "@/utils/logger";
 import { useDraggable } from "@dnd-kit/core";
 import {
   CheckSquare,
@@ -16,7 +17,7 @@ import {
 import { useCallback, useMemo } from "react";
 import { Button } from "./ui/button";
 
-const fieldTypes: Array<{
+export const paletteFieldTypes: Array<{
   widget: AppUiSchemaField["ui:widget"];
   label: string;
   icon: React.ReactNode;
@@ -70,17 +71,17 @@ const fieldTypes: Array<{
     label: "Radio Button",
     icon: <Circle className="w-4 h-4" />,
   },
-];
+] as const;
 
 export function FieldPalette() {
-  console.log("FieldPalette ++");
+  log.debug("FieldPalette ++");
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">Field Types</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {fieldTypes.map(({ widget, label, icon, type }) => (
+        {paletteFieldTypes.map(({ widget, label, icon, type }) => (
           <PalleteField
             key={`${widget}_${type}`}
             widget={widget}
@@ -105,7 +106,7 @@ function PalleteField({
   icon: React.ReactNode;
   type: FormField["type"] | undefined;
 }) {
-  // console.log("PalleteField++", widget);
+  // log.debug("PalleteField++", widget);
   const dragProps = useMemo(() => {
     return {
       id: `palette-${widget}`,
@@ -173,4 +174,19 @@ function PalleteField({
     ),
     [attributes, listeners, setNodeRef, isDragging, title, handleAdd],
   );
+}
+
+export function FieldPalatteInfo({ widget }: { widget: string | undefined }) {
+  const fieldTypeLabel = useMemo(() => {
+    if (!widget) return;
+    const fieldType = paletteFieldTypes.find((ft) => ft.widget === widget);
+    if (!fieldType) return;
+    return (
+      <div className="flex items-center space-x-2">
+        {fieldType.icon}
+        <span className="text-sm font-medium">{fieldType.label}</span>
+      </div>
+    );
+  }, [widget]);
+  return fieldTypeLabel;
 }

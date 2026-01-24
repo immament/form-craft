@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { NEW_FIELD_SKELETON_ID } from "@/store/FormCraftStore.actions";
 import { FormCraft } from "@/store/FormCraftStore.provider";
+import { getSubLogger } from "@/utils/logger";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -11,6 +12,7 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableField, SortableFieldWrapper } from "./SortableField";
 
+const log = getSubLogger({ name: "FormCanvas", minLevel: 3 });
 // export function useDragOrder() {
 //   const order = FormCraft.useFieldsOrder();
 
@@ -20,7 +22,7 @@ import { SortableField, SortableFieldWrapper } from "./SortableField";
 // }
 
 export function FormCanvas() {
-  console.log("FormCanvas ++");
+  log.debug("FormCanvas ++");
   return (
     <Card id="FormCanvas">
       <CardHeader>
@@ -33,7 +35,7 @@ export function FormCanvas() {
   );
 }
 function FormCanvasHeader() {
-  console.log("FormCanvasHeader ++");
+  log.debug("FormCanvasHeader ++", "test", "test2");
   const { updateSchema } = FormCraft.useActions();
   const { title, description } = FormCraft.useSchema();
 
@@ -61,7 +63,7 @@ function FormCanvasContent() {
   const fieldsOrder = FormCraft.useFieldsOrder();
   const { setNodeRef, over, active } = useDroppable({ id: "form-canvas" });
 
-  console.log("FormCanvasContent ++", "fieldsOrder:", fieldsOrder);
+  log.debug("FormCanvasContent ++", "fieldsOrder:", fieldsOrder);
   return (
     <div
       id="FormCanvasContent"

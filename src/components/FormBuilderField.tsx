@@ -5,6 +5,7 @@ import { DraggableAttributes } from "@dnd-kit/core";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { GripVertical, SettingsIcon, Trash2 } from "lucide-react";
 import { JSX, memo, MouseEventHandler, useCallback } from "react";
+import { FieldPalatteInfo } from "./FieldPalette";
 import { Button, Card, CardContent, Input, Label } from "./ui";
 
 interface FormBuilderFieldProps {
@@ -30,7 +31,7 @@ export function FormBuilderField({
   listeners,
   ...props
 }: FormBuilderFieldProps & React.ComponentProps<"div">) {
-  //   console.log("FormBuilderField ++", isClone, field?.$id);
+  //   log.debug("FormBuilderField ++", isClone, field?.$id);
   return (
     <Card
       ref={ref}
@@ -43,7 +44,7 @@ export function FormBuilderField({
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-2 h-8">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-wrap">
             <button
               // ref={setActivatorNodeRef}
               {...draggableAttributes}
@@ -52,13 +53,13 @@ export function FormBuilderField({
             >
               <GripVertical className="w-4 h-4 text-muted-foreground" />
             </button>
-            <div>
+            <div className="flex">
+              <FieldPalatteInfo widget={uiField["ui:widget"]} />
               <Label className="text-sm font-medium">
-                {field.$id}
-                {isRequired && <span className="text-red-500 ml-1">*</span>}
+                {isRequired && <span className="text-red-500 ml-1"> *</span>}
                 {uiField.conditional && (
                   <span className="text-xs text-blue-500 ml-2">
-                    (Conditional)
+                    (Condicional)
                   </span>
                 )}
               </Label>
@@ -67,11 +68,16 @@ export function FormBuilderField({
           {!isClone && <ActionButtons fieldId={field.$id} />}
         </div>
         <div className="mt-2">
-          {uiField["ui:widget"] !== "checkbox" && (
-            <Label className="text-sm font-medium mb-2 block">
-              {field.title}
-            </Label>
-          )}
+          <div className="flex justify-between flex-wrap gap-2 mb-2">
+            {uiField["ui:widget"] !== "checkbox" ? (
+              <Label className="text-sm font-medium block">{field.title}</Label>
+            ) : (
+              <span></span>
+            )}
+            <span className="text-xs text-gray-500 ml-2 wrap-break-word">
+              {field.$id}
+            </span>
+          </div>
           <RenderFieldPreview field={field} uiField={uiField} />
         </div>
       </CardContent>

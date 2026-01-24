@@ -1,4 +1,5 @@
 import { FormCraft } from "@/store/FormCraftStore.provider";
+import { logger as log } from "@/utils/logger";
 import ReactJsonView from "@microlink/react-json-view";
 import { UiSchema } from "@rjsf/utils";
 import { customizeValidator } from "@rjsf/validator-ajv8";
@@ -57,7 +58,7 @@ export function JsonFormPreview() {
         validator={validator}
         uiSchema={uiSchema}
         noHtml5Validate={true}
-        onChange={(e) => console.log("onChange:", e.formData.country)}
+        onChange={(e) => log.debug("onChange:", e.formData.country)}
         formData={{}}
         initialFormData={{}}
         // experimental_defaultFormStateBehavior={{
@@ -121,15 +122,15 @@ export function JsonSchemas({
   );
 }
 
-function deleteUndefined<T extends object>(obj: T): Partial<T> {
-  return Object.entries(obj).reduce((acc, [key, value]) => {
-    if (value === undefined) return acc;
-    // WARN:  not modify arrays
-    if (Array.isArray(value)) {
-      acc[key as keyof T] = value as T[keyof T];
-    } else if (typeof value === "object" && !Array.isArray(value))
-      acc[key as keyof T] = deleteUndefined(value) as typeof value;
-    else acc[key as keyof T] = value;
-    return acc;
-  }, {} as Partial<T>);
-}
+// function deleteUndefined<T extends object>(obj: T): Partial<T> {
+//   return Object.entries(obj).reduce((acc, [key, value]) => {
+//     if (value === undefined) return acc;
+//     // WARN:  not modify arrays
+//     if (Array.isArray(value)) {
+//       acc[key as keyof T] = value as T[keyof T];
+//     } else if (typeof value === "object" && !Array.isArray(value))
+//       acc[key as keyof T] = deleteUndefined(value) as typeof value;
+//     else acc[key as keyof T] = value;
+//     return acc;
+//   }, {} as Partial<T>);
+// }

@@ -1,4 +1,6 @@
+import { logger as log } from "@/utils/logger";
 // Keep-alive utility to prevent Render from sleeping
+
 export class KeepAlive {
   private intervalId: any | null = null;
   private readonly pingInterval = 14 * 60 * 1000; // 14 minutes (Render sleeps after 15 min)
@@ -16,18 +18,18 @@ export class KeepAlive {
         fetch(window.location.href, {
           method: "HEAD",
           cache: "no-cache",
-        }).catch(() => console.log("Keep-alive ping failed"));
+        }).catch(() => log.debug("Keep-alive ping failed"));
       });
     }, this.pingInterval);
 
-    console.log("Keep-alive started - pinging every 14 minutes");
+    log.debug("Keep-alive started - pinging every 14 minutes");
   }
 
   stop() {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
-      console.log("Keep-alive stopped");
+      log.debug("Keep-alive stopped");
     }
   }
 }

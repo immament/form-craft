@@ -13,7 +13,7 @@ export function SortableFieldWrapper({
   isClone?: boolean;
 }) {
   const field = FormCraft.useSchemaField(fieldId);
-  // console.log("SortableFieldWrapper", fieldId, field);
+  // log.debug("SortableFieldWrapper", fieldId, field);
   const uiField = FormCraft.useUiSchemaField(fieldId);
   const isRequired = FormCraft.useIsFieldRequired(fieldId);
 
@@ -44,12 +44,12 @@ export function SortableField({
   isClone,
 }: SortableFieldProps) {
   // if (isClone) {
-  // console.log("SortableField ++", isClone, field, field?.$id);
+  // log.debug("SortableField ++", isClone, field, field?.$id);
   // }
-  // console.log("SortableField ++", isClone, ",", field.$id, ",", field.title);
+  // log.debug("SortableField ++", isClone, ",", field.$id, ",", field.title);
 
   const props = useMemo(() => {
-    // console.log(
+    // log.debug(
     //   "SortableField props MEMO",
     //   isClone,
     //   ",",
@@ -66,7 +66,7 @@ export function SortableField({
         // widget: uiField["ui:widget"],
         // title: field.title,
 
-        dragType: "field",
+        dragType: "sorting",
         field: {
           $id: field.$id,
           title: field.title,

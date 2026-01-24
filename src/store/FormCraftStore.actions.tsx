@@ -6,8 +6,11 @@ import {
   FormFieldWithoutId,
   FormSchema,
 } from "@/types";
+import { getSubLogger } from "@/utils/logger";
 import { FormStoreBaseActions } from "./FormCraftStore";
 import { FormCraftStoreType } from "./FormCraftStore.provider";
+
+const log = getSubLogger({ name: "FormCraftStore.actions" });
 
 export const NEW_FIELD_SKELETON_ID = "new-sort-item";
 
@@ -27,7 +30,7 @@ export function createFormCraftActions(
           ...field,
           $id: get().actions.newFieldName(field, uiField["ui:widget"]),
         };
-        console.log("store_addField", newField, inSkeletonPlace);
+        log.debug("store_addField", newField, inSkeletonPlace);
         schema.properties[newField.$id] = newField;
         uiSchema[newField.$id] = uiField;
         if (inSkeletonPlace) {
@@ -147,7 +150,7 @@ export function createFormCraftActions(
 
     reorderFields: (activeIdx, toIdx) =>
       set((state) => {
-        console.log("reorderFields, activeIdx:", activeIdx, "to:", toIdx);
+        log.debug("reorderFields, activeIdx:", activeIdx, "to:", toIdx);
         const uiOrder = state.uiSchema["ui:order"];
         if (activeIdx >= 0 && toIdx >= 0) {
           arrayMove(uiOrder, activeIdx, toIdx);
@@ -157,7 +160,7 @@ export function createFormCraftActions(
 
     newItemSkelletonAtEnd: () => {
       set((state) => {
-        console.log(
+        log.debug(
           "newItemSkelletonAtEnd",
           state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID),
         );
@@ -171,7 +174,7 @@ export function createFormCraftActions(
     },
     newItemSkelletonAtIdx: (index) => {
       set((state) => {
-        console.log(
+        log.debug(
           "newItemSkelletonAtIdx, activeIdx:",
           index,
           state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID),
@@ -184,7 +187,7 @@ export function createFormCraftActions(
       });
     },
     clearNewItemSkelleton: () => {
-      console.log("clearNewItemSkelleton");
+      log.debug("clearNewItemSkelleton");
       set((state) => {
         state.fieldsOrder = state.uiSchema["ui:order"];
       });

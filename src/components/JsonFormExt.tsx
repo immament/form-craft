@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { logger as log } from "@/utils/logger";
 import type { FormProps, IChangeEvent } from "@rjsf/core";
 import ShadcnForm from "@rjsf/shadcn";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
@@ -42,7 +43,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
   const conditionalFields = useMemo(() => {
     if (props.uiSchema) {
       const result = pickConditionalFields(props.uiSchema, []);
-      console.log("conditionalFields = useMemo:", result);
+      log.debug("conditionalFields = useMemo:", result);
       return result.length ? result : undefined;
     }
   }, [props.uiSchema]);
@@ -56,7 +57,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
       });
       return;
     }
-    console.log("JsonFormExt2 useEffect  ++");
+    log.debug("JsonFormExt2 useEffect  ++");
 
     const movedProperties = moveToDefinitions(props.schema, conditionalFields);
 
@@ -73,7 +74,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
       true,
     );
     setFormState(newState);
-    console.log("useEffect newState", newState);
+    log.debug("useEffect newState", newState);
   }, [
     props.schema,
     props.uiSchema,
@@ -86,7 +87,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
   const conditionalFieldsExt = useMemo(() => {
     if (props.uiSchema?.extFields) {
       const result = pickConditionalFields(props.uiSchema.extFields, []);
-      console.log("conditionalFieldsExt = useMemo:", result);
+      log.debug("conditionalFieldsExt = useMemo:", result);
       return result.length ? result : undefined;
     }
   }, [props.uiSchema]);
@@ -95,7 +96,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
   useEffect(() => {
     if (!conditionalFieldsExt) return undefined;
 
-    console.log("JsonFormExt2 useEffect EXT ++");
+    log.debug("JsonFormExt2 useEffect EXT ++");
 
     processFormExt(
       props.schema ?? {},
@@ -124,7 +125,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
         false,
       );
       setFormState(newState);
-      console.log("handleChange newState:", newState);
+      log.debug("handleChange newState:", newState);
     } else {
       setFormState({ ...formState, formData: newData.formData });
     }
@@ -141,11 +142,11 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
       );
     }
   }
-  // console.log("JsonFormExt before rencder:", formState);
+  // log.debug("JsonFormExt before rencder:", formState);
 
   if (!formState) return <></>;
 
-  console.log(
+  log.debug(
     "JsonFormExt render:",
     formState.schema,
     formState.uiSchema,
@@ -200,7 +201,7 @@ function processFormExt(
   init: boolean,
 ): void {
   let extSchema = formState.schema.properties?.extFields as JSONSchema7;
-  console.log("processFormExt", extSchema);
+  log.debug("processFormExt", extSchema);
   if (init) {
     extSchema = {
       ...extSchema,
@@ -221,7 +222,7 @@ function processFormExt(
     false,
     "#/properties/extFields",
   );
-  console.log("handleChange EXT newState:", newStateExt);
+  log.debug("handleChange EXT newState:", newStateExt);
 
   setFormState((s) => {
     if (!s) return;
@@ -233,7 +234,7 @@ function processFormExt(
       formData: { ...s.formData, extFields: newStateExt.formData },
       uiSchema: { ...s.uiSchema, extFields: newStateExt.uiSchema },
     };
-    console.log("handleChange setFormState EXT full state:", result);
+    log.debug("handleChange setFormState EXT full state:", result);
     return result;
   });
 }
@@ -256,7 +257,7 @@ function processForm(
   init: boolean,
   refBase: string = "#",
 ): ProcessFormState {
-  console.log("processForm +++ state:", state);
+  log.debug("processForm +++ state:", state);
 
   if (!conditionalFields?.length) return state;
 
@@ -267,13 +268,13 @@ function processForm(
   let newUiSchema: UiSchema = state.uiSchema;
   let newFormData = formData;
   let schemaChanged = init ?? false;
-  console.log("processForm conditionalFields:", conditionalFields);
+  log.debug("processForm conditionalFields:", conditionalFields);
 
   for (const { conditional, id: dependant } of conditionalFields) {
     if (!conditional) continue;
     const visible: boolean = isFieldVisible(conditional, newFormData);
 
-    console.log(
+    log.debug(
       "processForm conditional:",
       dependant,
       conditional,
@@ -292,12 +293,12 @@ function processForm(
     } else {
       // not visible
       if (newSchema.properties[dependant]) {
-        console.log(
+        log.debug(
           "processForm newSchema.properties[dependant]",
           newSchema.properties[dependant],
         );
         newSchema.properties = omit(newSchema.properties, dependant);
-        console.log("newSchema.properties", newSchema.properties);
+        log.debug("newSchema.properties", newSchema.properties);
         if (Object.prototype.hasOwnProperty.call(newFormData, dependant))
           newFormData = omit(newFormData, dependant);
         schemaChanged = true;
@@ -323,7 +324,7 @@ function processForm(
       };
     }
 
-    console.log(
+    log.debug(
       "processForm schemaChanged:",
       newUiSchema["ui:order"],
       newSchema,
@@ -411,74 +412,3 @@ function omit<T>(obj: T, key: keyof T): Omit<T, keyof T> {
 //     !Object.entries(obj || {}).length
 //   );
 // }
-
-function processForm_org(
-  originalSchema: JSONSchema7,
-  originalUiSchema: UiSchema,
-  state: ProcessFormState,
-  formData: any,
-  conditionalFields: (UiSchema & { id: string })[],
-): ProcessFormState {
-  if (!conditionalFields?.length) return state;
-
-  const newSchema: JSONSchema7 = { ...state.schema };
-  if (!newSchema.properties) {
-    return state;
-  }
-  let newUiSchema: UiSchema = state.uiSchema;
-  let newFormData = formData;
-  let schemaChanged = false;
-  console.log("processForm +++", conditionalFields);
-  // const conditionalFieldsEntries = Object.entries(conditionalFields);
-  for (const { conditional, id: dependant } of conditionalFields) {
-    // const { conditional, id: dependant } = dependantUiSchema;
-    if (!conditional) continue;
-    const visible: boolean = isFieldVisible(conditional, newFormData);
-
-    console.log("conditional++", dependant, conditional, "visible:", visible);
-
-    if (newSchema.properties) {
-      if (visible) {
-        if (!newSchema.properties[dependant]) {
-          newSchema.properties[dependant] = {
-            $ref: `#/definitions/${dependant}`,
-          };
-          schemaChanged = true;
-        }
-      } else {
-        if (newSchema.properties[dependant]) {
-          newSchema.properties = omit(newSchema.properties, dependant);
-          if (Object.prototype.hasOwnProperty.call(newFormData, dependant))
-            newFormData = omit(newFormData, dependant);
-          schemaChanged = true;
-        }
-      }
-    }
-  }
-
-  if (schemaChanged) {
-    if (Object.prototype.hasOwnProperty.call(newSchema, "required")) {
-      newSchema.required = [
-        originalSchema.required,
-        Object.keys(newSchema.properties),
-      ].reduce((a, b) => a?.filter((c) => b?.includes(c)));
-    }
-    if (originalUiSchema["ui:order"]) {
-      newUiSchema = {
-        ...originalUiSchema,
-        ["ui:order"]: intersectArrays(
-          originalUiSchema["ui:order"],
-          Object.keys(newSchema.properties),
-        ),
-      };
-    }
-
-    console.log("schemaChanged", newSchema.properties, newFormData);
-    return {
-      schema: { ...newSchema, properties: { ...newSchema.properties } },
-      uiSchema: newUiSchema,
-      formData: { ...newFormData },
-    };
-  }
-  return state;
-}

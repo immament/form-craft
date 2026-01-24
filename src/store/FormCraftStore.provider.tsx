@@ -46,7 +46,7 @@ function createFormCraftStore(initSchema: FormSchema | undefined) {
       selectedFieldId: undefined,
       fieldsOrder: [],
       actions: createFormCraftActions(set, get),
-    }))
+    })),
   );
 }
 
@@ -69,15 +69,15 @@ export const FormCraft = {
   useSelectedFieldId: () => useFormCraft((state) => state.selectedFieldId),
   useSchemaField: (fieldId: string | undefined) =>
     useFormCraft(({ schema }) =>
-      fieldId ? schema.properties[fieldId] : undefined
+      fieldId ? schema.properties[fieldId] : undefined,
     ),
   useUiSchemaField: (
-    fieldId: string | undefined
+    fieldId: string | undefined,
   ): AppUiSchemaField | undefined =>
     useFormCraft(({ uiSchema }) => (fieldId ? uiSchema[fieldId] : undefined)),
   useIsFieldRequired: (fieldId: string | undefined): boolean =>
     useFormCraft(({ schema }) =>
-      fieldId ? schema.required.includes(fieldId) : false
+      fieldId ? schema.required.includes(fieldId) : false,
     ),
 
   useSelectedField(): {
@@ -93,8 +93,8 @@ export const FormCraft = {
           properties,
           uiSchema,
           required,
-        })
-      )
+        }),
+      ),
     );
 
     if (!selectedFieldId) return {};

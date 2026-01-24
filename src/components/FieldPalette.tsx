@@ -112,8 +112,12 @@ function PalleteField({
       data: {
         icon,
         dragType: "field",
-        field: { $id: `palette-${widget}`, title, type: type ?? "string" },
-        uiField: widget,
+        field: {
+          $id: `palette-${widget}`,
+          title: `${title} field`,
+          type: type ?? "string",
+        },
+        uiField: { ["ui:widget"]: widget },
       } as DraggedField,
     };
   }, [widget, title, icon, type]);
@@ -122,21 +126,22 @@ function PalleteField({
     useDraggable(dragProps);
   const { addField } = FormCraft.useActions();
 
+  // add button
   const handleAdd = useCallback(
     (e: { preventDefault: () => void }) => {
       e.preventDefault();
       addField(
         {
           type: type ?? "string",
-          title: `New ${widget} field x`,
+          title: `${title} field`,
           ...(widget === "select" || widget === "radio"
             ? { enum: ["Option 1", "Option 2"] }
             : {}),
         },
-        { ["ui:widget"]: widget }
+        { ["ui:widget"]: widget },
       );
     },
-    [widget, type, addField]
+    [widget, type, addField],
   );
 
   return useMemo(
@@ -148,7 +153,7 @@ function PalleteField({
           {...attributes}
           className={cn(
             `p-3 border rounded-lg cursor-grab hover:bg-accent transition-colors touch-none w-full`,
-            isDragging && "opacity-20"
+            isDragging && "opacity-20",
           )}
         >
           <div className="flex items-center space-x-2">
@@ -166,6 +171,6 @@ function PalleteField({
         </Button>
       </div>
     ),
-    [attributes, listeners, setNodeRef, isDragging, title, handleAdd]
+    [attributes, listeners, setNodeRef, isDragging, title, handleAdd],
   );
 }

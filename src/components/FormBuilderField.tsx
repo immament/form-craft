@@ -38,7 +38,7 @@ export function FormBuilderField({
       className={cn(
         "transition-all min-w-72",
         (isDragging || isClone) && "opacity-50",
-        isSelected && "ring-2 ring-primary"
+        isSelected && "ring-2 ring-primary",
       )}
     >
       <CardContent className="p-4">
@@ -54,7 +54,7 @@ export function FormBuilderField({
             </button>
             <div>
               <Label className="text-sm font-medium">
-                {field.title}
+                {field.$id}
                 {isRequired && <span className="text-red-500 ml-1">*</span>}
                 {uiField.conditional && (
                   <span className="text-xs text-blue-500 ml-2">
@@ -91,7 +91,7 @@ const ActionButtons = memo(function _ActionButtons({
       ev.stopPropagation();
       if (confirm("Tem a certeza?")) removeField(fieldId);
     },
-    [fieldId, removeField]
+    [fieldId, removeField],
   );
   return (
     <div className="flex space-x-1">

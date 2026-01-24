@@ -4,7 +4,6 @@ import { UiSchema } from "@rjsf/utils";
 import { customizeValidator } from "@rjsf/validator-ajv8";
 import { JSONSchema7 } from "json-schema";
 import { ChevronsUpDown, Eye } from "lucide-react";
-import { useMemo } from "react";
 import { JsonFormExt } from "./JsonFormExt";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "./ui";
 import {
@@ -22,7 +21,7 @@ export function JsonFormPreviewCard() {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Eye className="w-4 h-4" />
-          Json Live Preview
+          Pré-visualização ao vivo
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -33,18 +32,19 @@ export function JsonFormPreviewCard() {
 }
 
 export function JsonFormPreview() {
-  const schema = FormCraft.useSchema();
-  const { exportJsonSchema } = FormCraft.useActions();
+  const jsonSchema = FormCraft.useSchema();
+  const uiSchema = FormCraft.useUiSchema();
+  // const { exportJsonSchema } = FormCraft.useActions();
 
-  const { jsonSchema, uiSchema, jsonSchemaFiltered } = useMemo(() => {
-    const { jsonSchema, uiSchema } = exportJsonSchema();
-    validator.reset();
-    return {
-      jsonSchema,
-      jsonSchemaFiltered: deleteUndefined(jsonSchema),
-      uiSchema,
-    };
-  }, [exportJsonSchema, schema, validator]);
+  // const { jsonSchema, uiSchema, jsonSchemaFiltered } = useMemo(() => {
+  //   const { jsonSchema, uiSchema } = exportJsonSchema();
+  //   validator.reset();
+  //   return {
+  //     jsonSchema,
+  //     jsonSchemaFiltered: deleteUndefined(jsonSchema),
+  //     uiSchema,
+  //   };
+  // }, [exportJsonSchema, schema, validator]);
   return (
     <div className="flex flex-col gap-4 mb-4">
       {/* <JsonFormExt
@@ -67,7 +67,7 @@ export function JsonFormPreview() {
 
         // templates={{ FieldTemplate: CustomFieldTemplate }}
       />
-      <JsonSchemas jsonSchema={jsonSchemaFiltered} uiSchema={uiSchema} />
+      <JsonSchemas jsonSchema={jsonSchema} uiSchema={uiSchema} />
     </div>
   );
 }

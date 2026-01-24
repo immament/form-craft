@@ -6,6 +6,7 @@ export * from "./FormBuilderField";
 export * from "./FormCanvas";
 export * from "./FormTemplates";
 export * from "./JsonFormExt.demo";
+export * from "./JsonFormExt";
 export * from "./JsonFormPreview";
 export * from "./SortableField";
 // export * from "./MultiStepControls";

@@ -11,7 +11,16 @@ import {
   FormFieldUpdate,
 } from "@/types";
 import { Plus, X, XIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import {
+  InputGroup,
+  InputGroupButton,
+  InputGroupInput,
+} from "./ui/input-group";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { Field, FieldError, FieldGroup } from "./ui/field";
 
 export function FieldEditor() {
   const { updateField, selectField, updateRequiredField, updateFieldUi } =
@@ -23,13 +32,13 @@ export function FieldEditor() {
 
   if (!field || !uiField) {
     return (
-      <Card>
+      <Card id="FieldEditor">
         <CardHeader>
-          <CardTitle className="text-lg">Field Properties</CardTitle>
+          <CardTitle className="text-lg">Propriedades do Campo</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm">
-            Select a field to edit its properties
+            Selecione um campo para editar as suas propriedades
           </p>
         </CardContent>
       </Card>
@@ -50,20 +59,20 @@ export function FieldEditor() {
     <Card>
       <CardHeader>
         <CardTitle className="text-lg flex items-center">
-          <span className="flex-1">Field Properties</span>
+          <span className="flex-1">Propriedades do Campo</span>
           <Button
             variant="ghost"
             size="icon-sm"
             onClick={() => selectField(undefined)}
           >
             <XIcon className="h-6 w-6" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Fechar</span>
           </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="field-label">Label</Label>
+          <Label htmlFor="field-label">Etiqueta</Label>
           <Input
             id="field-label"
             value={field.title}
@@ -73,7 +82,7 @@ export function FieldEditor() {
 
         {uiField["ui:widget"] !== "checkbox" && (
           <div>
-            <Label htmlFor="field-placeholder">Placeholder</Label>
+            <Label htmlFor="field-placeholder">Espaço reservado</Label>
             <Input
               id="field-placeholder"
               value={uiField["ui:placeholder"] || ""}
@@ -92,7 +101,7 @@ export function FieldEditor() {
               updateRequiredField(field.$id, checked)
             }
           />
-          <Label htmlFor="field-required">Required</Label>
+          <Label htmlFor="field-required">Obrigatório</Label>
         </div>
 
         {needsOptions && (
@@ -113,7 +122,7 @@ export function FieldEditor() {
         {uiField["ui:widget"] === "email" && (
           <div>
             <Label htmlFor="email-message" className="text-xs">
-              Custom Email Error Message
+              Mensagem de erro de e-mail personalizado
             </Label>
             <Input
               id="email-message"
@@ -133,9 +142,104 @@ export function FieldEditor() {
           updateFieldUi={updateFieldUi}
           field={field}
         />
+        <UpdateIdField key={field.$id} fieldId={field.$id} />
       </CardContent>
     </Card>
   );
+}
+
+const formSchema = z.object({
+  fieldId: z
+    .string()
+    .min(3, "O ID deve ter pelo menos 3 caracteres.")
+    .max(50, "O ID deve ter um máximo de 50 caracteres.")
+    .regex(
+      /^[A-Za-z0-9][A-Za-z0-9_]+$/,
+      "O ID só pode conter letras e o caractere de sublinhado.",
+    ),
+});
+
+function UpdateIdField({ fieldId }: { fieldId: string }) {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      fieldId: fieldId,
+    },
+  });
+
+  function onSubmit(data: z.infer<typeof formSchema>) {
+    console.log(JSON.stringify(data, null, 2));
+  }
+
+  return (
+    <form id="form-field-id" onSubmit={form.handleSubmit(onSubmit)}>
+      <FieldGroup>
+        <Controller
+          name="fieldId"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field>
+              <Label htmlFor={field.name}>DEV: Field Id</Label>
+              <InputGroup>
+                <InputGroupInput
+                  {...field}
+                  id={field.name}
+                  aria-invalid={fieldState.invalid}
+                  autoComplete="off"
+                />
+                <InputGroupButton
+                  variant="secondary"
+                  type="submit"
+                  form="form-field-id"
+                >
+                  Update
+                </InputGroupButton>
+              </InputGroup>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+      </FieldGroup>
+    </form>
+  );
+
+  // return (
+  //   <div>
+  //     <Label htmlFor="field-id">DEV: Field Id</Label>
+  //     <InputGroup>
+  //       <InputGroupInput
+  //         id="field-id"
+  //         ref={inputRef}
+  //         value={tmpId}
+  //         onChange={(e) => setTmpId(e.target.value)}
+  //         pattern="^[A-Za-z_]+$"
+  //         onInvalid={(e) => {
+  //           e.currentTarget.formNoValidate;
+  //         }}
+  //       />
+  //       <InputGroupButton
+  //         // size="sm"
+  //         variant="secondary"
+  //         onClick={() => {
+  //           if (tmpId) {
+  //             console.log(
+  //               "validity:",
+  //               inputRef.current?.validity.valid,
+  //               inputRef.current?.validationMessage,
+  //               inputRef.current?.formNoValidate,
+  //             );
+  //             if (inputRef.current?.validity.valid) {
+  //               updateFieldId(fieldId, tmpId);
+  //             }
+  //           }
+  //         }}
+  //         disabled={!tmpId || tmpId === fieldId}
+  //       >
+  //         Update
+  //       </InputGroupButton>
+  //     </InputGroup>
+  //   </div>
+  // );
 }
 
 function ConditionalLogic({
@@ -150,16 +254,16 @@ function ConditionalLogic({
   const { properties } = FormCraft.useSchema();
   const propertiesArray = useMemo(
     () => Object.values(properties).filter((f) => f.$id !== field.$id),
-    [properties]
+    [properties, field.$id],
   );
 
   return (
-    <div className="space-y-3">
-      <Label>Conditional Logic</Label>
+    <div id="ConditionalLogic" className="space-y-3">
+      <Label>Lógica Condicional</Label>
       <div className="space-y-2">
         <div>
           <Label htmlFor="depends-on" className="text-xs mb-2">
-            Show when field
+            Mostrar quando o campo
           </Label>
           <select
             id="depends-on"
@@ -178,7 +282,7 @@ function ConditionalLogic({
             }
           >
             <option value="" className="bg-background">
-              No dependency
+              Sem dependência
             </option>
             {propertiesArray.map((f) => (
               <option key={f.$id} value={f.$id} className="bg-background">
@@ -235,7 +339,7 @@ function ConditionalLogicCondition({
   return (
     <div>
       <Label htmlFor="condition" className="text-xs mb-2">
-        Condition
+        Condição
       </Label>
       <select
         id="condition"
@@ -252,23 +356,23 @@ function ConditionalLogicCondition({
         }
       >
         <option key={"equals"} value="equals" className="bg-background">
-          Equals
+          Igual a (Equals)
         </option>
         <option key={"not_equals"} value="not_equals" className="bg-background">
-          Not equals
+          Não é igual a (Not equals)
         </option>
         <option
           key={"not_empty_equals"}
           value="not_empty_equals"
           className="bg-background"
         >
-          Not empty not equals
+          Não está vazio, não é igual a (Not empty, not equals)
         </option>
         <option key={"contains"} value="contains" className="bg-background">
-          Contains
+          Contém (Contains)
         </option>
         <option key={"not_empty"} value="not_empty" className="bg-background">
-          Is not empty
+          Não está vazio (Is not empty)
         </option>
       </select>
     </div>

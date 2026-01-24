@@ -20,8 +20,9 @@ import { SortableField, SortableFieldWrapper } from "./SortableField";
 // }
 
 export function FormCanvas() {
+  console.log("FormCanvas ++");
   return (
-    <Card>
+    <Card id="FormCanvas">
       <CardHeader>
         <FormCanvasHeader />
       </CardHeader>
@@ -32,12 +33,12 @@ export function FormCanvas() {
   );
 }
 function FormCanvasHeader() {
-  console.log("FormCanvasHeader++");
+  console.log("FormCanvasHeader ++");
   const { updateSchema } = FormCraft.useActions();
   const { title, description } = FormCraft.useSchema();
 
   return (
-    <div className="space-y-2">
+    <div id="FormCanvasHeader" className="space-y-2">
       <Label htmlFor="form-title">Título do formulário</Label>
       <Input
         id="form-title"
@@ -60,13 +61,14 @@ function FormCanvasContent() {
   const fieldsOrder = FormCraft.useFieldsOrder();
   const { setNodeRef, over, active } = useDroppable({ id: "form-canvas" });
 
-  // console.log("FormCanvasContent++", "fieldsOrder:", fieldsOrder);
+  console.log("FormCanvasContent ++", "fieldsOrder:", fieldsOrder);
   return (
     <div
+      id="FormCanvasContent"
       ref={setNodeRef}
       className={cn(
         "space-y-4 p-4 border-2 border-dashed border-muted-foreground/25 rounded-lg pb-28",
-        over && "border-2 border-dashed border-primary"
+        over && "border-2 border-dashed border-primary",
       )}
       style={{ minHeight: "596px" }}
     >
@@ -92,7 +94,7 @@ function FormCanvasContent() {
               )
             ) : (
               <SortableFieldWrapper key={key} fieldId={key} />
-            )
+            ),
           )}
         </SortableContext>
       )}

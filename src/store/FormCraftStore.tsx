@@ -24,9 +24,10 @@ export type FormStoreBaseActions = {
   addField: (
     field: FormFieldWithoutId,
     uiField: AppUiSchemaField,
-    inSkeletonPlace?: boolean
+    inSkeletonPlace?: boolean,
   ) => void;
   updateField: (id: string, updates: FormFieldUpdate) => void;
+  updateFieldId: (oldId: string, newId: string) => void;
   updateFieldUi: (id: string, updates: Partial<AppUiSchemaField>) => void;
   removeField: (id: string) => void;
 
@@ -45,13 +46,14 @@ export type FormStoreBaseActions = {
     uiSchema: UiSchema;
   }) => void;
   regenerateFieldIds: () => void;
+  fixSchema: () => void;
   exportSchema: () => FormSchema;
   exportJsonSchema: () => { jsonSchema: JSONSchema7; uiSchema: UiSchema };
   exportReactComponent: () => string;
 
   newFieldName: (
     field: FormFieldWithoutId,
-    widget: string | undefined
+    widget: string | undefined,
   ) => string;
 };
 

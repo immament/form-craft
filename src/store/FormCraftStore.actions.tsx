@@ -13,15 +13,16 @@ export const NEW_FIELD_SKELETON_ID = "new-sort-item";
 
 export function createFormCraftActions(
   set: FormCraftStoreType["setState"],
-  get: FormCraftStoreType["getState"]
+  get: FormCraftStoreType["getState"],
 ): FormStoreBaseActions {
   return {
     addField: (
       field: FormFieldWithoutId,
       uiField: AppUiSchemaField,
-      inSkeletonPlace?: boolean
+      inSkeletonPlace?: boolean,
     ) => {
-      set(({ schema, uiSchema, fieldsOrder }) => {
+      set((state) => {
+        const { schema, uiSchema, fieldsOrder } = state;
         const newField: FormField = {
           ...field,
           $id: get().actions.newFieldName(field, uiField["ui:widget"]),
@@ -33,10 +34,15 @@ export function createFormCraftActions(
           const skeletonIdx = fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID);
           if (skeletonIdx !== -1) {
             uiSchema["ui:order"].splice(skeletonIdx, 0, newField.$id);
+            state.selectedFieldId = newField.$id;
             return;
           }
         }
         uiSchema["ui:order"].push(newField.$id);
+        fieldsOrder.push(newField.$id);
+        state.selectedFieldId = newField.$id;
+
+        // get().actions.selectField(newField.$id);
       });
     },
     newFieldName: (field, widget) => {
@@ -62,6 +68,46 @@ export function createFormCraftActions(
         if (field) Object.assign(field, updates);
       });
     },
+
+    updateFieldId: (oldId, newId) => {
+      if (!oldId || !newId || oldId === newId) return;
+      set((state) => {
+        const field = state.schema.properties[oldId];
+        if (!field) return;
+
+        // create new property
+        state.schema.properties[newId] = { ...field, $id: newId };
+        // delete old property
+        delete state.schema.properties[oldId];
+
+        // update required
+        state.schema.required = state.schema.required.map((key) =>
+          key === oldId ? newId : key,
+        );
+
+        // update uiSchema
+        state.uiSchema[newId] = { ...state.uiSchema[oldId] };
+        delete state.uiSchema[oldId];
+
+        // update ui:order & fieldsOrder
+        state.uiSchema["ui:order"] = state.uiSchema["ui:order"].map((key) =>
+          key === oldId ? newId : key,
+        );
+        state.fieldsOrder = [...state.uiSchema["ui:order"]];
+
+        // update conditional
+        state.uiSchema["ui:order"].forEach((key) => {
+          if (state.uiSchema[key]?.conditional?.dependsOn === oldId) {
+            state.uiSchema[key].conditional.dependsOn = newId;
+          }
+        });
+
+        // select new field
+        if (state.selectedFieldId === oldId) {
+          state.selectedFieldId = newId;
+        }
+      });
+    },
     updateFieldUi: (id, updates) => {
       set(({ uiSchema }) => {
         if (uiSchema[id]) {
@@ -73,12 +119,28 @@ export function createFormCraftActions(
     },
     removeField: (id) => {
       set((state) => {
-        console.log("removeField", id, state, state.schema.properties[id]);
         delete state.schema.properties[id];
         delete state.uiSchema[id];
-        state.fieldsOrder = state.uiSchema["ui:order"] = state.uiSchema[
-          "ui:order"
-        ].filter((oId) => oId !== id);
+
+        // update required
+        state.schema.required = state.schema.required.filter(
+          (key) => key !== id,
+        );
+
+        // update ui:order & fieldsOrder
+        state.uiSchema["ui:order"] = state.uiSchema["ui:order"].filter(
+          (oId) => oId !== id,
+        );
+        state.fieldsOrder = [...state.uiSchema["ui:order"]];
+
+        // delete conditional
+        state.uiSchema["ui:order"].forEach((key) => {
+          if (state.uiSchema[key]?.conditional?.dependsOn === id) {
+            delete state.uiSchema[key].conditional;
+          }
+        });
+
+        // unselect
         if (state.selectedFieldId === id) state.selectedFieldId = undefined;
       });
     },
@@ -89,7 +151,7 @@ export function createFormCraftActions(
         const uiOrder = state.uiSchema["ui:order"];
         if (activeIdx >= 0 && toIdx >= 0) {
           arrayMove(uiOrder, activeIdx, toIdx);
-          state.fieldsOrder = uiOrder;
+          state.fieldsOrder = [...uiOrder];
         }
       }),
 
@@ -97,7 +159,7 @@ export function createFormCraftActions(
       set((state) => {
         console.log(
           "newItemSkelletonAtEnd",
-          state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID)
+          state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID),
         );
         if (state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID) === -1) {
           state.fieldsOrder = [
@@ -112,7 +174,7 @@ export function createFormCraftActions(
         console.log(
           "newItemSkelletonAtIdx, activeIdx:",
           index,
-          state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID)
+          state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID),
         );
         if (state.fieldsOrder.indexOf(NEW_FIELD_SKELETON_ID) !== index) {
           const result = [...state.uiSchema["ui:order"]];
@@ -154,6 +216,15 @@ export function createFormCraftActions(
     regenerateFieldIds: () => {
       throw new Error("regenerateFieldIds not implemented!");
     },
+    fixSchema: () => {
+      set((state) => {
+        state.schema.required = state.schema.required.filter(
+          (key) => !!state.schema.properties[key],
+        );
+        state.schema.definitions = {};
+      });
+    },
+
     exportSchema: () => get().schema,
     exportJsonSchema: () => ({
       jsonSchema: get().schema,
@@ -172,7 +243,7 @@ export function createFormCraftActions(
         // jsonSchema,
         uiSchema: uiSchema as AppUiSchema,
         selectedFieldId: undefined,
-        fieldsOrder: uiSchema["ui:order"],
+        fieldsOrder: uiSchema["ui:order"] ? [...uiSchema["ui:order"]] : [],
       });
     },
   };

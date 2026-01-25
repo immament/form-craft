@@ -32,6 +32,8 @@ export type FormField = {
   pattern?: string; // => pattern
   message?: string; // ?? missing
 
+  required?: string[];
+
   // to remove
   // ext_required?: boolean;
   // conditional?: any;

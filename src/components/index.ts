@@ -1,6 +1,6 @@
 export * from "./Analytics";
 export * from "./ExportPanel";
-export * from "./FieldEditor";
+export * from "./field-editor/FieldEditor";
 export * from "./FieldPalette";
 export * from "./FormBuilderField";
 export * from "./FormCanvas";

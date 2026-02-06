@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { FormCraft } from "@/store/FormCraftStore.provider";
+import { FormCraft } from "@/store/FormCraft";
 import { Code, Download, FileJson } from "lucide-react";
 import { useState } from "react";
 
@@ -9,7 +9,7 @@ export function ExportPanel() {
   const { exportSchema, exportReactComponent, regenerateFieldIds } =
     FormCraft.useActions();
   const [exportType, setExportType] = useState<"schema" | "component">(
-    "schema"
+    "schema",
   );
   const [exportContent, setExportContent] = useState("");
 

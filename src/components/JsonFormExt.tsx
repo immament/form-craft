@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { logger as log } from "@/utils/logger";
-import type { FormProps, IChangeEvent } from "@rjsf/core";
+import { type FormProps, type IChangeEvent } from "@rjsf/core";
 import ShadcnForm from "@rjsf/shadcn";
-import type { RJSFSchema, UiSchema } from "@rjsf/utils";
+import type { RegistryWidgetsType, RJSFSchema, UiSchema } from "@rjsf/utils";
 import type { JSONSchema7 } from "json-schema";
 import {
   useEffect,
@@ -11,6 +11,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { AutoFieldWidget } from "./AutoField.Widget";
 
 export type JsfConditionRule = {
   dependsOn: string;
@@ -28,14 +29,9 @@ type ProcessFormState = {
   formData: any;
 };
 
-// for (const { id } of conditionalFields) {
-//   if (!id) continue;
-//   if (props.schema.properties?.[id]) {
-//     props.schema.definitions ??= {};
-//     props.schema.definitions[id] = props.schema.properties[id];
-//     delete props.schema.properties[id];
-//   }
-// }
+const widgets: RegistryWidgetsType = {
+  autoFieldWidget: AutoFieldWidget,
+};
 
 export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
   const [formState, setFormState] = useState<ProcessFormState>();
@@ -57,7 +53,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
       });
       return;
     }
-    log.debug("JsonFormExt2 useEffect  ++");
+    log.debug("JsonFormExt useEffect  ++");
 
     const movedProperties = moveToDefinitions(props.schema, conditionalFields);
 
@@ -96,7 +92,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
   useEffect(() => {
     if (!conditionalFieldsExt) return undefined;
 
-    log.debug("JsonFormExt2 useEffect EXT ++");
+    log.debug("JsonFormExt useEffect EXT ++");
 
     processFormExt(
       props.schema ?? {},
@@ -160,6 +156,7 @@ export function JsonFormExt(props: FormProps<any, RJSFSchema, any>) {
       uiSchema={formState.uiSchema}
       formData={formState.formData}
       onChange={handleChange}
+      widgets={widgets}
       // omitExtraData={true}
       // liveOmit={true}
     />

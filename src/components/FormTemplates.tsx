@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateId } from "@/lib/my-utils";
-import { FormCraft } from "@/store/FormCraftStore.provider";
+import { FormCraft } from "@/store/FormCraft";
 import { FormField, FormSchema } from "@/types";
 import { FileText, MessageSquare, ShoppingCart, User } from "lucide-react";
 
@@ -240,12 +240,15 @@ function toProperties(
     ui_widget?: string;
     ext_required?: boolean;
     ui_placeholder?: string;
-  })[]
+  })[],
 ) {
-  return fields.reduce((acc, f) => {
-    acc[f.$id] = f;
-    return acc;
-  }, {} as Record<string, FormField>);
+  return fields.reduce(
+    (acc, f) => {
+      acc[f.$id] = f;
+      return acc;
+    },
+    {} as Record<string, FormField>,
+  );
 }
 
 export function FormTemplates() {

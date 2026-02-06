@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { NEW_FIELD_SKELETON_ID } from "@/store/FormCraftStore.actions";
-import { FormCraft } from "@/store/FormCraftStore.provider";
+import { FormCraft } from "@/store/FormCraft";
 import { getSubLogger } from "@/utils/logger";
 import { useDroppable } from "@dnd-kit/core";
 import {

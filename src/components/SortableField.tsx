@@ -1,4 +1,4 @@
-import { FormCraft } from "@/store/FormCraftStore.provider";
+import { FormCraft } from "@/store/FormCraft";
 import { AppUiSchemaField, DraggedField, FormField } from "@/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";

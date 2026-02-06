@@ -1,4 +1,4 @@
-import { FormCraft } from "@/store/FormCraftStore.provider";
+import { FormCraft } from "@/store/FormCraft";
 import { logger as log } from "@/utils/logger";
 import ReactJsonView from "@microlink/react-json-view";
 import { UiSchema } from "@rjsf/utils";
@@ -13,7 +13,6 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 
-//ptLocalizer
 const validator = customizeValidator({});
 
 export function JsonFormPreviewCard() {
@@ -32,27 +31,16 @@ export function JsonFormPreviewCard() {
   );
 }
 
-export function JsonFormPreview() {
+export function JsonFormPreview({
+  withJsonSchams = false,
+}: {
+  withJsonSchams?: boolean;
+}) {
   const jsonSchema = FormCraft.useSchema();
   const uiSchema = FormCraft.useUiSchema();
-  // const { exportJsonSchema } = FormCraft.useActions();
 
-  // const { jsonSchema, uiSchema, jsonSchemaFiltered } = useMemo(() => {
-  //   const { jsonSchema, uiSchema } = exportJsonSchema();
-  //   validator.reset();
-  //   return {
-  //     jsonSchema,
-  //     jsonSchemaFiltered: deleteUndefined(jsonSchema),
-  //     uiSchema,
-  //   };
-  // }, [exportJsonSchema, schema, validator]);
   return (
     <div className="flex flex-col gap-4 mb-4">
-      {/* <JsonFormExt
-          schema={originalSchema}
-          uiSchema={originalUISchema}
-          formData={originalFormData}
-        /> */}
       <JsonFormExt
         schema={jsonSchema}
         validator={validator}
@@ -61,14 +49,10 @@ export function JsonFormPreview() {
         onChange={(e) => log.debug("onChange:", e.formData.country)}
         formData={{}}
         initialFormData={{}}
-        // experimental_defaultFormStateBehavior={{
-        //   constAsDefaults: "always",
-        //   emptyObjectFields: "populateAllDefaults",
-        // }}
-
-        // templates={{ FieldTemplate: CustomFieldTemplate }}
       />
-      <JsonSchemas jsonSchema={jsonSchema} uiSchema={uiSchema} />
+      {withJsonSchams && (
+        <JsonSchemas jsonSchema={jsonSchema} uiSchema={uiSchema} />
+      )}
     </div>
   );
 }
@@ -80,13 +64,8 @@ export function JsonSchemas({
   jsonSchema: Partial<JSONSchema7>;
   uiSchema: UiSchema;
 }) {
-  // const [isOpen, setIsOpen] = useState(true);
   return (
-    <Collapsible
-      // open={isOpen}
-      // onOpenChange={setIsOpen}
-      className="flex flex-col gap-2"
-    >
+    <Collapsible className="flex flex-col gap-2">
       <CollapsibleTrigger asChild>
         <Button variant="secondary" size="sm">
           <div className="flex items-center justify-between gap-4 w-full">
@@ -121,16 +100,3 @@ export function JsonSchemas({
     </Collapsible>
   );
 }
-
-// function deleteUndefined<T extends object>(obj: T): Partial<T> {
-//   return Object.entries(obj).reduce((acc, [key, value]) => {
-//     if (value === undefined) return acc;
-//     // WARN:  not modify arrays
-//     if (Array.isArray(value)) {
-//       acc[key as keyof T] = value as T[keyof T];
-//     } else if (typeof value === "object" && !Array.isArray(value))
-//       acc[key as keyof T] = deleteUndefined(value) as typeof value;
-//     else acc[key as keyof T] = value;
-//     return acc;
-//   }, {} as Partial<T>);
-// }

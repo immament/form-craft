@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { FormCraft } from "@/store/FormCraftStore.provider";
+import { FormCraft } from "@/store/FormCraft";
 import { AppUiSchemaField, DraggedField, FormField } from "@/types";
 import { logger as log } from "@/utils/logger";
 import { useDraggable } from "@dnd-kit/core";
@@ -11,6 +11,7 @@ import {
   FileText,
   Hash,
   Mail,
+  MonitorCog,
   PlusIcon,
   Type,
 } from "lucide-react";
@@ -71,10 +72,15 @@ export const paletteFieldTypes: Array<{
     label: "Radio Button",
     icon: <Circle className="w-4 h-4" />,
   },
+  {
+    widget: "autoFieldWidget",
+    label: "Auto Field",
+    icon: <MonitorCog className="w-4 h-4" />,
+  },
 ] as const;
 
 export function FieldPalette() {
-  log.debug("FieldPalette ++");
+  // log.debug("FieldPalette ++");
   return (
     <Card>
       <CardHeader>

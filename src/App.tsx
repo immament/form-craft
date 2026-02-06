@@ -1,5 +1,5 @@
 import { ExportPanel } from "@/components/ExportPanel";
-import { FieldEditor } from "@/components/FieldEditor";
+import { FieldEditor } from "@/components/field-editor/FieldEditor";
 import { FieldPalette } from "@/components/FieldPalette";
 import { FormCanvas } from "@/components/FormCanvas";
 // import { FormPreviewOld } from "@/components/FormPreview.old";
@@ -30,7 +30,7 @@ function App() {
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   const handleDragStart = (event: DragStartEvent) => {
